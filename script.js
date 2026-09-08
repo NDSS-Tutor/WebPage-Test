@@ -1,3 +1,3 @@
 function popup(){
-    alert("YOU ARE GAY");
+    alert("V.1");
 }
