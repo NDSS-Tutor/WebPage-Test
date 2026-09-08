@@ -1,5 +1,5 @@
 function popup(){
-    alert("V.1");
+    alert("V.2");
 }
 function run(){
 
