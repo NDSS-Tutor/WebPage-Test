@@ -8,7 +8,7 @@ body{
 }
 
 .main_content{
-    background-color: floralwhite;
+    background-color: red;
     flex-grow: 1;
 }
 
