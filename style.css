@@ -22,4 +22,5 @@ body{
 .side_stuff{
     background-color: blue;
     width: 300px;
+    min-height:100vh;   
 }
