@@ -11,14 +11,10 @@ body{
     min-height: 100vh;
 }
 
-.GAY{
-    background-color: red;
-}
-
 .main_content{
     background-color: floralwhite;
-    flex: 1;
 }
+
 .side_stuff{
     background-color: blue;
     width: 300px;
