@@ -12,7 +12,6 @@ body{
     background-color: red;
     width: 70vw;
     min-height: 100vh;
-    position: absolute;
 }
 
 .side_stuff{
@@ -20,8 +19,6 @@ body{
     background-color: blue;
     width: 30vw;
     min-height:100vh;
-    right: 0;
-    position: absolute;
 }
 
 @media screen and (max-width: 480px){
