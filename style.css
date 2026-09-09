@@ -23,3 +23,9 @@ body{
     right: 0;
     position: absolute;
 }
+
+@media screen and (max-width: 480px){
+    .side_stuff{
+        width: 50vw;
+    }
+}
