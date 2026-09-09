@@ -29,6 +29,7 @@ body:has(.side_stuff.open) #openSide {
     width: 20vw;
     padding: 8px;
     box-sizing: border-box;
+    display: flex;
     align-items: center;
 }
 
