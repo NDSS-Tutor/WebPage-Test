@@ -23,6 +23,7 @@ body:has(.side_stuff.open) #openSide {
     min-height: 100vh;
     overflow: hidden;
     transition: width 0.3s ease;
+    display: flex;
 }
 
 .side_stuff.open{
@@ -30,7 +31,7 @@ body:has(.side_stuff.open) #openSide {
     padding: 8px;
     box-sizing: border-box;
     display: flex;
-    align-items: center;
+    justify-content: center;
 }
 
 @media screen and (max-width: 480px){
