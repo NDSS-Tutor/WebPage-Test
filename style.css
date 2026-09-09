@@ -26,6 +26,7 @@ body{
 
 @media screen and (max-width: 480px){
     .side_stuff{
+        background-color: black;
         width: 50vw;
     }
 }
