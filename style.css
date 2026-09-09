@@ -38,6 +38,7 @@ body:has(.side_stuff.open) #openSide {
 }
 .sidebarBTN{
     flex: 1;
+    width: 100%;
 }
 @media screen and (max-width: 480px){
     .side_stuff.open{
