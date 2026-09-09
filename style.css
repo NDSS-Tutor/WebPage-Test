@@ -40,11 +40,13 @@ body:has(.side_stuff.open) #openSide {
     flex: 1;
     width: 100%;
 }
-@media screen and (max-width: 480px){
+@media (max-width: 480px){
     .side_stuff.open{
-        flex-shrink:0;
-        width: 100vw;
-        padding: 6px;
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+        padding: 10px;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
