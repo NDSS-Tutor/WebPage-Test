@@ -41,6 +41,7 @@ body:has(.side_stuff.open) #openSide {
     width: 100%;
 }
 #closeSide{
+    flex: 0.5;
     width: 25%;
 }
 @media (max-width: 480px){
