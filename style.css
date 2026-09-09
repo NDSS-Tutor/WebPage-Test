@@ -8,8 +8,11 @@ body{
 }
 
 .main_content{
+    flex: 1;
     background-color: red;
-    flex-grow: 1;
+    width: 70vw;
+    min-height: 100vh;
+    position: absolute;
 }
 
 .side_stuff{
