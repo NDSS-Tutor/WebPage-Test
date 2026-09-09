@@ -36,6 +36,9 @@ body:has(.side_stuff.open) #openSide {
     flex-direction: column;
     align-items: center;
 }
+.sidebarBTN{
+    flex: 1;
+}
 @media screen and (max-width: 480px){
     .side_stuff.open{
         width: 100vw;
