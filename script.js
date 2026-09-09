@@ -1,13 +1,15 @@
 
 const sidebar = document.querySelector(".side_stuff");
-const buttons = document.querySelectorAll("#toggleSidebar");
+const Obutton = document.querySelector("#openSide");
+const Xbutton = document.querySelector("#closeSide");
 
 function popup(){
     alert("V.3");
 }
 
-buttons.forEach(button => {
-    button.addEventListener("click", () => {
-        sidebar.classList.toggle("open");
-    });
+Obutton.addEventListener("click", function() {
+    sidebar.classList.add("open");
+});
+Xbutton.addEventListener("click", function() {
+    sidebar.classList.remove("open");
 });
