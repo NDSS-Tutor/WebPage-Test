@@ -17,7 +17,7 @@ body{
     background-color: blue;
     width: 30vw;
     min-height:100vh;
-    margin: 10px;
+    padding: 10px;
 }
 
 .Version{
