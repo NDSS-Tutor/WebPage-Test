@@ -12,6 +12,10 @@ body{
     min-height: 100vh;
 }
 
+body:has(.side_stuff.open) #openSide {
+    display: none;
+}
+
 .side_stuff{
     width: 0;
     padding: 0;
