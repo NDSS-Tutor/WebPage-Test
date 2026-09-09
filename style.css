@@ -17,6 +17,11 @@ body{
     background-color: blue;
     width: 30vw;
     min-height:100vh;
+    margin: 10px;
+}
+
+.Version{
+    width: 100%
 }
 
 @media screen and (max-width: 480px){
