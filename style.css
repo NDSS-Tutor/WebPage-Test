@@ -22,8 +22,8 @@ body:has(.side_stuff.open) #openSide {
     background-color: blue;
     min-height: 100vh;
     overflow: hidden;
-
     transition: width 0.3s ease;
+    align-items: center;
 }
 
 .side_stuff.open{
