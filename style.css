@@ -23,13 +23,13 @@ body:has(.side_stuff.open) #openSide {
     min-height: 100vh;
     overflow: hidden;
     transition: width 0.3s ease;
-    align-items: center;
 }
 
 .side_stuff.open{
     width: 20vw;
     padding: 8px;
     box-sizing: border-box;
+    align-items: center;
 }
 
 @media screen and (max-width: 480px){
