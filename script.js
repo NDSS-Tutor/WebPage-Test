@@ -25,7 +25,7 @@ function showPage(page){
     }
     else if (page === 'site-info'){
         content.innerHTML = `
-            <h1>SITE INFO</h1>
+            <h1 class="title">SITE INFO</h1>
         `;
     }
     else if (page === 'ph'){
