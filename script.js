@@ -23,7 +23,7 @@ function showPage(page){
             <h1>Scheduling</h1>
         `;
     }
-    if (page === 'page-info'){
+    if (page === 'site-info'){
         content.innerHTML = `
             <h1 class='title'>SITE INFO</h1>
         `;
