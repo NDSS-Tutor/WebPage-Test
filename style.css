@@ -5,17 +5,17 @@ html,body{
 body{
     display:flex;
 }
-
 .content{
     flex: 1;
     background-color: red;
     min-height: 100vh;
 }
 
+
+/* SIDEBAR STUFF */
 body:has(.side_stuff.open) #openSide {
     display: none;
 }
-
 .side_stuff{
     width: 0;
     padding: 0;
@@ -27,7 +27,6 @@ body:has(.side_stuff.open) #openSide {
     flex-direction: column;
     align-items: center;
 }
-
 .side_stuff.open{
     width: 20vw;
     padding: 8px;
@@ -44,6 +43,10 @@ body:has(.side_stuff.open) #openSide {
     flex: 0.5;
     width: 25%;
 }
+/* !SIDEBAR STUFF */
+
+
+/* PHONE SIZING */
 @media (max-width: 480px){
     .side_stuff.open{
         width: 100%;
@@ -60,4 +63,9 @@ body:has(.side_stuff.open) #openSide {
     body:has(.side_stuff.open) .content{
         display: none;
     }
+}
+
+/* SITE INFO PAGE */
+.title{
+    text-align: center;
 }
