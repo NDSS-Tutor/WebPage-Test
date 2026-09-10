@@ -6,7 +6,7 @@ body{
     display:flex;
 }
 
-#content{
+.content{
     flex: 1;
     background-color: red;
     min-height: 100vh;
@@ -57,7 +57,7 @@ body:has(.side_stuff.open) #openSide {
         align-items: center;
     }
 
-    body:has(.side_stuff.open) #content{
+    body:has(.side_stuff.open) .content{
         display: none;
     }
 }
