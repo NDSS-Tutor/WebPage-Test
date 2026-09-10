@@ -18,17 +18,17 @@ function showPage(page){
             <h1>Home</h1>
         `;
     }
-    if (page === 'scheduling'){
+    else if (page === 'scheduling'){
         content.innerHTML = `
             <h1>Scheduling</h1>
         `;
     }
-    if (page === 'site-info'){
+    else if (page === 'site-info'){
         content.innerHTML = `
-            <h1 class='title'>SITE INFO</h1>
+            <h1>SITE INFO</h1>
         `;
     }
-    if (page === 'ph'){
+    else if (page === 'ph'){
         
     }
 }
