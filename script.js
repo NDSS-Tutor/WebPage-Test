@@ -3,12 +3,15 @@ const content = document.getElementById("content");
 const Obutton = document.querySelector("#openSide");
 const Xbutton = document.querySelector("#closeSide");
 
-Obutton.addEventListener("click", function() {
+function openSide(){
     sidebar.classList.add("open");
-});
-Xbutton.addEventListener("click", function() {
+}
+function closeSide(){
     sidebar.classList.remove("open");
-});
+}
+Obutton.addEventListener("click", openSide())
+Xbutton.addEventListener("click", closeSide())
+
 
 function showPage(page){
     if (page === 'home'){
@@ -26,4 +29,6 @@ function showPage(page){
     if (page === 'ph'){
         
     }
+    Obutton = document.querySelector("#openSide");
+    Obutton.addEventListener("click", openSide())
 }
