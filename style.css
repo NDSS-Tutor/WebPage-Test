@@ -13,12 +13,13 @@ body{
 
 
 /* SIDEBAR STUFF */
-body:has(.side_stuff.open) #openSide {
+body:has(.side_bar.open) #openSide {
     display: none;
 }
-.side_stuff{
+.side_bar{
     width: 0;
     padding: 0;
+    gap: 20px;
     background-color: blue;
     min-height: 100vh;
     overflow: hidden;
@@ -27,7 +28,7 @@ body:has(.side_stuff.open) #openSide {
     flex-direction: column;
     align-items: center;
 }
-.side_stuff.open{
+.side_bar.open{
     width: 20vw;
     padding: 8px;
     box-sizing: border-box;
@@ -53,7 +54,7 @@ body:has(.side_stuff.open) #openSide {
 
 /* PHONE SIZING */
 @media (max-width: 480px){
-    .side_stuff.open{
+    .side_bar.open{
         width: 100%;
         min-width: 100%;
         max-width: 100%;
@@ -65,7 +66,7 @@ body:has(.side_stuff.open) #openSide {
         align-items: center;
     }
 
-    body:has(.side_stuff.open) .content{
+    body:has(.side_bar.open) .content{
         display: none;
     }
 }

@@ -1,4 +1,4 @@
-const sidebar = document.querySelector(".side_stuff");
+const sidebar = document.querySelector(".side_bar");
 const content = document.getElementById("content");
 const Obutton = document.querySelector("#openSide");
 const Xbutton = document.querySelector("#closeSide");
