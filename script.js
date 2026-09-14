@@ -1,3 +1,12 @@
+const SUPABASE_URL = "https://syxmioodlxwyoyqpezum.supabase.co/rest/v1/g";
+const SUPABASE_KEY = "sb_publishable_CTHgfFkjGTCTKWo9AUC6Fw_99m3JKQE";
+
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
 const sidebar = document.querySelector(".side_bar");
 const content = document.getElementById("content");
 const Obutton = document.querySelector("#openSide");
