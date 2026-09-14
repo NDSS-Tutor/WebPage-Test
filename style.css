@@ -45,9 +45,14 @@ body:has(.side_bar.open) #openSide {
   height: 64px;
   object-fit: contain; 
 }
+.close-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain; 
+}
 #closeSide{
     flex: 0.5;
-    width: 25%;
+    width: 60%;
 }
 /* !SIDEBAR STUFF */
 
