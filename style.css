@@ -53,7 +53,7 @@ body:has(.side_bar.open) #openSide {
 }
 #closeSide{
     flex: 0.5;
-    width: 60%;
+    width: fit-content;
 }
 /* !SIDEBAR STUFF */
 
