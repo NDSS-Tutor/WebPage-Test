@@ -45,15 +45,15 @@ body:has(.side_bar.open) #openSide {
   height: 64px;
   object-fit: contain; 
 }
-.close-icon {
+.o_x-icon {
     width: 32px;
     height: 32px;
     object-fit: contain;
-    text-align: right;
 }
-#closeSide{
+#o_xSide{
     flex: 0.5;
     width: 40%;
+    text-align: center;
 }
 /* !SIDEBAR STUFF */
 
