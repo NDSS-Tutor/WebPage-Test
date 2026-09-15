@@ -6,28 +6,6 @@ const supabaseClient = supabase.createClient(
 );
 
 
-async function testSupabase() {
-    const message = document.createElement("p");
-    message.id = "supabase-test";
-    message.textContent = "Testing Supabase...";
-    document.body.appendChild(message);
-
-    try {
-        const { data, error } = await supabaseClient.auth.getSession();
-
-        if (error) {
-            message.textContent = "Supabase ERROR: " + error.message;
-        } else {
-            message.textContent = "Supabase connection successful!";
-        }
-    } catch (err) {
-        message.textContent = "Supabase ERROR: " + err.message;
-    }
-}
-
-testSupabase();
-
-
 const sidebar = document.querySelector(".side_bar");
 const content = document.getElementById("content");
 const Obutton = document.querySelector("#openSide");
@@ -51,6 +29,44 @@ function showPage(page){
     else if (page === 'scheduling'){
         content.innerHTML = `
             <h1>Scheduling</h1>
+        `;
+    }
+    else if (page === 'account'){
+        content.innerHTML = `
+            <h1 class="title">ACCOUNT</h1>
+            <div class="account-container">
+                <h2>Create Account</h2>
+                <input
+                    type="text"
+                    id="signup-username"
+                    placeholder="Username"
+                >
+                <input
+                    type="email"
+                    id="signup-email"
+                    placeholder="Email"
+                >
+                <input
+                    type="password"
+                    id="signup-password"
+                    placeholder="Password"
+                >
+                <button onclick="signUp()">Create Account</button>
+                <hr>
+                <h2>Log In</h2>
+                <input
+                    type="email"
+                    id="login-email"
+                    placeholder="Email"
+                >
+                <input
+                    type="password"
+                    id="login-password"
+                    placeholder="Password"
+                >
+                <button onclick="logIn()">Log In</button>
+                <p id="account-message"></p>
+            </div>
         `;
     }
     else if (page === 'site-info'){
