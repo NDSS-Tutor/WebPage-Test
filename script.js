@@ -96,7 +96,12 @@ async function signUp() {
 
     const { data, error } = await supabaseClient.auth.signUp({
         email: email,
-        password: password
+        password: password,
+        options: {
+            data: {
+                username: username
+            }
+        }
     });
 
     if (error) {
@@ -106,21 +111,6 @@ async function signUp() {
 
     if (!data.user) {
         message.textContent = "Account could not be created.";
-        return;
-    }
-
-    const { error: profileError } = await supabaseClient
-        .from("profiles")
-        .insert({
-            id: data.user.id,
-            username: username
-        });
-
-    if (profileError) {
-        message.textContent =
-            "Account created, but username failed: " +
-            profileError.message;
-
         return;
     }
 
