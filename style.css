@@ -50,7 +50,12 @@ body:has(.side_bar.open) #openSide {
     height: 32px;
     object-fit: contain;
 }
-#o_xSide{
+#closeSide{
+    flex: 0.5;
+    width: 40%;
+    text-align: center;
+}
+#openSide{
     flex: 0.5;
     width: 40%;
     text-align: center;
