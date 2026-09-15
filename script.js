@@ -6,6 +6,8 @@ const supabaseClient = supabase.createClient(
     SUPABASE_KEY
 );
 
+alert("Supabase loaded:", supabaseClient);
+
 
 const sidebar = document.querySelector(".side_bar");
 const content = document.getElementById("content");
