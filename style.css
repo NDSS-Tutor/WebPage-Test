@@ -49,7 +49,7 @@ body:has(.side_bar.open) #openSide {
     width: 32px;
     height: 32px;
     object-fit: contain;
-    text-align: center;
+    text-align: right;
 }
 #closeSide{
     flex: 0.5;
