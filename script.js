@@ -42,11 +42,6 @@ function showPage(page){
                     placeholder="Username"
                 >
                 <input
-                    type="email"
-                    id="signup-email"
-                    placeholder="Email"
-                >
-                <input
                     type="password"
                     id="signup-password"
                     placeholder="Password"
@@ -55,9 +50,9 @@ function showPage(page){
                 <hr>
                 <h2>Log In</h2>
                 <input
-                    type="email"
-                    id="login-email"
-                    placeholder="Email"
+                    type="text"
+                    id="login-username"
+                    placeholder="Username"
                 >
                 <input
                     type="password"
@@ -82,12 +77,11 @@ function showPage(page){
 async function signUp() {
 
     const username = document.getElementById("signup-username").value.trim();
-    const email = document.getElementById("signup-email").value.trim();
     const password = document.getElementById("signup-password").value;
 
     const message = document.getElementById("account-message");
 
-    if (!username || !email || !password) {
+    if (!username ||  !password) {
         message.textContent = "Please fill in all fields.";
         return;
     }
@@ -95,7 +89,6 @@ async function signUp() {
     message.textContent = "Creating account...";
 
     const { data, error } = await supabaseClient.auth.signUp({
-        email: email,
         password: password,
         options: {
             data: {
