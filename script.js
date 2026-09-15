@@ -78,3 +78,51 @@ function showPage(page){
         
     }
 }
+
+async function signUp() {
+
+    const username = document.getElementById("signup-username").value.trim();
+    const email = document.getElementById("signup-email").value.trim();
+    const password = document.getElementById("signup-password").value;
+
+    const message = document.getElementById("account-message");
+
+    if (!username || !email || !password) {
+        message.textContent = "Please fill in all fields.";
+        return;
+    }
+
+    message.textContent = "Creating account...";
+
+    const { data, error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password
+    });
+
+    if (error) {
+        message.textContent = "Error: " + error.message;
+        return;
+    }
+
+    if (!data.user) {
+        message.textContent = "Account could not be created.";
+        return;
+    }
+
+    const { error: profileError } = await supabaseClient
+        .from("profiles")
+        .insert({
+            id: data.user.id,
+            username: username
+        });
+
+    if (profileError) {
+        message.textContent =
+            "Account created, but username failed: " +
+            profileError.message;
+
+        return;
+    }
+
+    message.textContent = "Account created successfully!";
+}
