@@ -81,14 +81,25 @@ async function signUp() {
 
     const message = document.getElementById("account-message");
 
-    if (!username ||  !password) {
-        message.textContent = "Please fill in all fields.";
+    if (!username || !password) {
+        message.textContent = "Please enter a username and password.";
+        return;
+    }
+
+    // Only allow safe username characters
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+        message.textContent =
+            "Username can only contain letters, numbers, _ and -.";
         return;
     }
 
     message.textContent = "Creating account...";
 
+    // Create an internal email address for Supabase Auth
+    const authEmail = username.toLowerCase() + "@site19.local";
+
     const { data, error } = await supabaseClient.auth.signUp({
+        email: authEmail,
         password: password,
         options: {
             data: {
@@ -108,4 +119,34 @@ async function signUp() {
     }
 
     message.textContent = "Account created successfully!";
+}
+
+async function logIn() {
+
+    const username = document.getElementById("login-username").value.trim();
+    const password = document.getElementById("login-password").value;
+
+    const message = document.getElementById("account-message");
+
+    if (!username || !password) {
+        message.textContent = "Please enter a username and password.";
+        return;
+    }
+
+    message.textContent = "Logging in...";
+
+    const authEmail = username.toLowerCase() + "@site19.local";
+
+    const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+            email: authEmail,
+            password: password
+        });
+
+    if (error) {
+        message.textContent = "Error: " + error.message;
+        return;
+    }
+
+    message.textContent = "Logged in successfully!";
 }
