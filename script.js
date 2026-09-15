@@ -1,12 +1,31 @@
-const SUPABASE_URL = "https://syxmioodlxwyoyqpezum.supabase.co/rest/v1/g";
+const SUPABASE_URL = "https://syxmioodlxwyoyqpezum.supabase.co";
 const SUPABASE_KEY = "sb_publishable_CTHgfFkjGTCTKWo9AUC6Fw_99m3JKQE";
-
 const supabaseClient = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
 
-alert("Supabase loaded:", supabaseClient);
+
+async function testSupabase() {
+    const message = document.createElement("p");
+    message.id = "supabase-test";
+    message.textContent = "Testing Supabase...";
+    document.body.appendChild(message);
+
+    try {
+        const { data, error } = await supabaseClient.auth.getSession();
+
+        if (error) {
+            message.textContent = "Supabase ERROR: " + error.message;
+        } else {
+            message.textContent = "Supabase connection successful!";
+        }
+    } catch (err) {
+        message.textContent = "Supabase ERROR: " + err.message;
+    }
+}
+
+testSupabase();
 
 
 const sidebar = document.querySelector(".side_bar");
