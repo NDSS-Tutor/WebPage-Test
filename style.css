@@ -52,12 +52,13 @@ body:has(.side_bar.open) #openSide {
 }
 #closeSide{
     flex: 0.5;
-    width: 40%;
+    width: 100%;
     text-align: center;
 }
 #openSide{
     flex: 0.5;
-    width: 40%;
+    width: 32px;
+    height: 32px;
     text-align: center;
 }
 /* !SIDEBAR STUFF */
