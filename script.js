@@ -32,37 +32,7 @@ function showPage(page){
         `;
     }
     else if (page === 'account'){
-        content.innerHTML = `
-            <h1 class="title">ACCOUNT</h1>
-            <div class="account-container">
-                <h2>Create Account</h2>
-                <input
-                    type="text"
-                    id="signup-username"
-                    placeholder="Username"
-                >
-                <input
-                    type="password"
-                    id="signup-password"
-                    placeholder="Password"
-                >
-                <button onclick="signUp()">Create Account</button>
-                <hr>
-                <h2>Log In</h2>
-                <input
-                    type="text"
-                    id="login-username"
-                    placeholder="Username"
-                >
-                <input
-                    type="password"
-                    id="login-password"
-                    placeholder="Password"
-                >
-                <button onclick="logIn()">Log In</button>
-                <p id="account-message"></p>
-            </div>
-        `;
+        showAccountPage();
     }
     else if (page === 'site-info'){
         content.innerHTML = `
@@ -73,7 +43,87 @@ function showPage(page){
         
     }
 }
+async function showAccountPage() {
 
+    const { data: { session } } =
+        await supabaseClient.auth.getSession();
+
+    if (session) {
+
+        const { data: profile, error } =
+            await supabaseClient
+                .from("profiles")
+                .select("username")
+                .eq("id", session.user.id)
+                .single();
+
+        if (error) {
+            content.innerHTML = `
+                <h1 class="title">ACCOUNT</h1>
+                <p>Error loading profile: ${error.message}</p>
+            `;
+            return;
+        }
+
+        content.innerHTML = `
+            <h1 class="title">ACCOUNT</h1>
+
+            <div class="account-container">
+                <h2>Logged In</h2>
+
+                <p>Username: <strong>${profile.username}</strong></p>
+
+                <button onclick="logOut()">Log Out</button>
+            </div>
+        `;
+
+    } else {
+
+        content.innerHTML = `
+            <h1 class="title">ACCOUNT</h1>
+
+            <div class="account-container">
+
+                <h2>Create Account</h2>
+
+                <input
+                    type="text"
+                    id="signup-username"
+                    placeholder="Username"
+                >
+
+                <input
+                    type="password"
+                    id="signup-password"
+                    placeholder="Password"
+                >
+
+                <button onclick="signUp()">Create Account</button>
+
+                <hr>
+
+                <h2>Log In</h2>
+
+                <input
+                    type="text"
+                    id="login-username"
+                    placeholder="Username"
+                >
+
+                <input
+                    type="password"
+                    id="login-password"
+                    placeholder="Password"
+                >
+
+                <button onclick="logIn()">Log In</button>
+
+                <p id="account-message"></p>
+
+            </div>
+        `;
+    }
+}
 async function signUp() {
 
     const username = document.getElementById("signup-username").value.trim();
@@ -118,9 +168,8 @@ async function signUp() {
         return;
     }
 
-    message.textContent = "Account created successfully!";
+    showAccountPage();
 }
-
 async function logIn() {
 
     const username = document.getElementById("login-username").value.trim();
@@ -148,17 +197,16 @@ async function logIn() {
         return;
     }
 
-    message.textContent = "Logged in successfully!";
+    showAccountPage();
 }
-async function checkLogin() {
-    const { data: { session } } =
-        await supabaseClient.auth.getSession();
+async function logOut() {
 
-    if (session) {
-        console.log("User is logged in:", session.user.id);
-    } else {
-        console.log("Nobody is logged in.");
+    const { error } = await supabaseClient.auth.signOut();
+
+    if (error) {
+        alert("Error logging out: " + error.message);
+        return;
     }
-}
 
-checkLogin();
+    showAccountPage();
+}
