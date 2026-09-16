@@ -57,11 +57,19 @@ async function showAccountPage() {
                 .eq("id", session.user.id)
                 .single();
 
-        if (error) {
+        if (error || !profile) {
+
+            await supabaseClient.auth.signOut();
+
             content.innerHTML = `
                 <h1 class="title">ACCOUNT</h1>
-                <p>Error loading profile: ${error.message}</p>
+
+                <div class="account-container">
+                    <p>Your account is no longer available.</p>
+                    <p>Please create a new account or log in with another account.</p>
+                </div>
             `;
+
             return;
         }
 
