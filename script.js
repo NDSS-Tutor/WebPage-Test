@@ -34,6 +34,16 @@ function showPage(page){
     else if (page === 'resources'){
         showPostsPage();
     }
+    else if (page === 'tools'){
+        content.innerHTML = `
+            <h1>Study Tools</h1>
+        `;
+    }
+    else if (page === 'groups'){
+        content.innerHTML = `
+            <h1>Study Groups</h1>
+        `;
+    }
     else if (page === 'account'){
         showAccountPage();
     }
