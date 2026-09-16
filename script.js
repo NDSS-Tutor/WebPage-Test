@@ -458,35 +458,6 @@ async function logOut() {
 
     showAccountPage();
 }
-async function checkAdmin() {
-
-    const {
-        data: { user }
-    } = await supabaseClient.auth.getUser();
-
-    if (!user) {
-        console.log("Not logged in.");
-        return;
-    }
-
-    const { data: profile, error } =
-        await supabaseClient
-            .from("profiles")
-            .select("username, is_admin")
-            .eq("id", user.id)
-            .single();
-
-    if (error) {
-        console.log("Error checking admin:", error.message);
-        return;
-    }
-
-    if (profile.is_admin) {
-        console.log(profile.username + " is an admin.");
-    } else {
-        console.log(profile.username + " is NOT an admin.");
-    }
-}
 
 function escapeHTML(text) {
 
