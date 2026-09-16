@@ -150,3 +150,15 @@ async function logIn() {
 
     message.textContent = "Logged in successfully!";
 }
+async function checkLogin() {
+    const { data: { session } } =
+        await supabaseClient.auth.getSession();
+
+    if (session) {
+        console.log("User is logged in:", session.user.id);
+    } else {
+        console.log("Nobody is logged in.");
+    }
+}
+
+checkLogin();
