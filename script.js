@@ -31,6 +31,9 @@ function showPage(page){
             <h1>Scheduling</h1>
         `;
     }
+    else if (page === 'resources'){
+        showPostsPage();
+    }
     else if (page === 'account'){
         showAccountPage();
     }
@@ -39,9 +42,236 @@ function showPage(page){
             <h1 class="title">SITE INFO</h1>
         `;
     }
-    else if (page === 'ph'){
-        
+}
+async function showPostsPage() {
+
+    content.innerHTML = `
+        <h1 class="title">POSTS</h1>
+
+        <div class="posts-container">
+
+            <button onclick="showCreatePost()">
+                + Create Post
+            </button>
+
+            <div id="posts-list">
+                <p>Loading posts...</p>
+            </div>
+
+        </div>
+    `;
+
+    await loadPosts();
+}
+function showCreatePost() {
+
+    content.innerHTML = `
+        <h1 class="title">CREATE POST</h1>
+
+        <div class="post-form">
+
+            <label for="post-title">Title</label>
+
+            <input
+                type="text"
+                id="post-title"
+                placeholder="Post title"
+            >
+
+            <label for="post-category">Category</label>
+
+            <select id="post-category">
+                <option value="Book">Book</option>
+                <option value="Website">Website</option>
+                <option value="Article">Article</option>
+                <option value="Video">Video</option>
+                <option value="Study Resource">Study Resource</option>
+                <option value="Tool">Tool</option>
+                <option value="Recommendation">Recommendation</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label for="post-description">Description</label>
+
+            <textarea
+                id="post-description"
+                placeholder="Explain what makes this resource useful..."
+            ></textarea>
+
+            <label for="post-link">Link (optional)</label>
+
+            <input
+                type="url"
+                id="post-link"
+                placeholder="https://example.com"
+            >
+
+            <button onclick="createPost()">
+                Submit for Review
+            </button>
+
+            <button onclick="showPostsPage()">
+                Cancel
+            </button>
+
+            <p id="post-message"></p>
+
+        </div>
+    `;
+}
+async function createPost() {
+
+    const title =
+        document.getElementById("post-title").value.trim();
+
+    const description =
+        document.getElementById("post-description").value.trim();
+
+    const link =
+        document.getElementById("post-link").value.trim();
+
+    const category =
+        document.getElementById("post-category").value;
+
+    const message =
+        document.getElementById("post-message");
+
+
+    if (!title || !description) {
+
+        message.textContent =
+            "Please enter a title and description.";
+
+        return;
     }
+
+
+    message.textContent = "Submitting post...";
+
+
+    // Get the currently logged-in user
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+
+    if (userError || !user) {
+
+        message.textContent =
+            "You must be logged in to create a post.";
+
+        return;
+    }
+
+
+    const { error } =
+        await supabaseClient
+            .from("posts")
+            .insert({
+                user_id: user.id,
+                title: title,
+                description: description,
+                link: link || null,
+                category: category,
+                status: "pending"
+            });
+
+
+    if (error) {
+
+        message.textContent =
+            "Error: " + error.message;
+
+        return;
+    }
+
+
+    message.textContent =
+        "Post submitted for review!";
+
+
+    setTimeout(() => {
+        showPostsPage();
+    }, 1500);
+}
+async function loadPosts() {
+
+    const postsList =
+        document.getElementById("posts-list");
+
+    const { data: posts, error } =
+        await supabaseClient
+            .from("posts")
+            .select(`
+                id,
+                title,
+                description,
+                link,
+                category,
+                created_at,
+                profiles (
+                    username
+                )
+            `)
+            .eq("status", "approved")
+            .order("created_at", { ascending: false });
+
+
+    if (error) {
+
+        postsList.innerHTML =
+            `<p>Error loading posts: ${error.message}</p>`;
+
+        return;
+    }
+
+
+    if (!posts || posts.length === 0) {
+
+        postsList.innerHTML =
+            `<p>No approved posts yet.</p>`;
+
+        return;
+    }
+
+
+    postsList.innerHTML = posts.map(post => `
+
+        <article class="post">
+
+            <h2>${escapeHTML(post.title)}</h2>
+
+            <p class="post-category">
+                ${escapeHTML(post.category)}
+            </p>
+
+            <p>
+                ${escapeHTML(post.description)}
+            </p>
+
+            ${
+                post.link
+                ? `<a href="${escapeAttribute(post.link)}"
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      View Resource
+                   </a>`
+                : ""
+            }
+
+            <p class="post-author">
+                Posted by:
+                ${escapeHTML(post.profiles?.username || "Unknown")}
+            </p>
+
+            <p class="post-date">
+                ${new Date(post.created_at).toLocaleDateString()}
+            </p>
+
+        </article>
+
+    `).join("");
 }
 async function showAccountPage() {
 
@@ -217,4 +447,21 @@ async function logOut() {
     }
 
     showAccountPage();
+}
+
+function escapeHTML(text) {
+
+    const div = document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+function escapeAttribute(text) {
+
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 }
