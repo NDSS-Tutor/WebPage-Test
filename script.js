@@ -465,6 +465,7 @@ async function checkAdmin() {
     } = await supabaseClient.auth.getUser();
 
     if (!user) {
+        console.log("Not logged in.");
         return;
     }
 
@@ -476,11 +477,14 @@ async function checkAdmin() {
             .single();
 
     if (error) {
+        console.log("Error checking admin:", error.message);
         return;
     }
 
     if (profile.is_admin) {
-        console.log("ADMIN ACCOUNT");
+        console.log(profile.username + " is an admin.");
+    } else {
+        console.log(profile.username + " is NOT an admin.");
     }
 }
 
