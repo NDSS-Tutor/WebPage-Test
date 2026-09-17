@@ -328,11 +328,17 @@ async function showAccountPage() {
                         Admin Panel
                     </button>
                 ` : ""}
-                ${!profile.is_tutor ? `
+                ${profile.is_tutor ? `
+                    <p><strong>Tutor</strong></p>
+
+                    <button onclick="showTutorDashboard()">
+                        Tutor Dashboard
+                    </button>
+                ` : `
                     <button onclick="showTutorApplication()">
                         Apply to Become a Tutor
                     </button>
-                ` : ""}
+                `}
 
                 <button onclick="logOut()">Log Out</button>
             </div>
@@ -408,10 +414,19 @@ async function showAdminPage() {
                 <p>Loading pending posts...</p>
             </div>
 
+            <hr>
+
+            <h2>Tutor Applications</h2>
+
+            <div id="tutor-applications">
+                <p>Loading tutor applications...</p>
+            </div>
+
         </div>
     `;
 
     await loadPendingPosts();
+    await loadTutorApplications();
 }
 async function showTutorApplication() {
 
@@ -503,6 +518,160 @@ async function submitTutorApplication() {
 
     message.textContent =
         "Your tutor application has been submitted!";
+}
+async function loadTutorApplications() {
+
+    const container =
+        document.getElementById("tutor-applications");
+
+    const { data: applications, error } =
+        await supabaseClient
+            .from("tutor_applications")
+            .select(`
+                id,
+                user_id,
+                reason,
+                status,
+                created_at,
+                profiles (
+                    username
+                )
+            `)
+            .eq("status", "pending")
+            .order("created_at", { ascending: true });
+
+
+    if (error) {
+
+        container.innerHTML = `
+            <p>
+                Error loading tutor applications:
+                ${escapeHTML(error.message)}
+            </p>
+        `;
+
+        return;
+    }
+
+
+    if (!applications || applications.length === 0) {
+
+        container.innerHTML = `
+            <p>No tutor applications are currently waiting for review.</p>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML = applications.map(application => `
+
+        <div class="tutor-application">
+
+            <h3>
+                ${escapeHTML(
+                    application.profiles?.username || "Unknown User"
+                )}
+            </h3>
+
+            <p>
+                <strong>Application:</strong>
+            </p>
+
+            <p>
+                ${escapeHTML(application.reason)}
+            </p>
+
+            <p>
+                <strong>Submitted:</strong>
+                ${new Date(application.created_at).toLocaleString()}
+            </p>
+
+            <button
+                onclick="approveTutorApplication('${application.id}')"
+            >
+                Approve
+            </button>
+
+            <button
+                onclick="rejectTutorApplication('${application.id}')"
+            >
+                Reject
+            </button>
+
+        </div>
+
+    `).join("");
+}
+async function approveTutorApplication(applicationId) {
+
+    const confirmed =
+        confirm(
+            "Approve this user as a tutor?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    const { error } =
+        await supabaseClient
+            .rpc(
+                "approve_tutor_application",
+                {
+                    application_id: applicationId
+                }
+            );
+
+
+    if (error) {
+
+        alert(
+            "Error approving tutor application: " +
+            error.message
+        );
+
+        return;
+    }
+
+
+    await loadTutorApplications();
+}
+async function rejectTutorApplication(applicationId) {
+
+    const confirmed =
+        confirm(
+            "Reject and permanently delete this tutor application?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    const { error } =
+        await supabaseClient
+            .rpc(
+                "reject_tutor_application",
+                {
+                    application_id: applicationId
+                }
+            );
+
+
+    if (error) {
+
+        alert(
+            "Error rejecting tutor application: " +
+            error.message
+        );
+
+        return;
+    }
+
+
+    await loadTutorApplications();
 }
 async function signUp() {
 
