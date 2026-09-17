@@ -109,6 +109,9 @@ body:has(.side_bar.open) #openSide {
 
 /* !SIDEBAR STUFF */
 
+.posts-container{
+    padding-left: 30%;
+}
 
 /* PHONE SIZING */
 @media (max-width: 480px){
