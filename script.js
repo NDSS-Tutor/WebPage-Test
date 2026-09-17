@@ -323,6 +323,10 @@ async function showAccountPage() {
 
                 ${profile.is_admin ? `
                     <p><strong>Administrator</strong></p>
+
+                    <button onclick="showAdminPage()">
+                        Admin Panel
+                    </button>
                 ` : ""}
 
                 <button onclick="logOut()">Log Out</button>
@@ -375,6 +379,34 @@ async function showAccountPage() {
             </div>
         `;
     }
+}
+async function showAdminPage() {
+
+    const profile = await getCurrentProfile();
+
+    if (!profile || !profile.is_admin) {
+        content.innerHTML = `
+            <h1 class="title">ACCESS DENIED</h1>
+            <p>You do not have permission to access the Admin Panel.</p>
+        `;
+        return;
+    }
+
+    content.innerHTML = `
+        <h1 class="title">ADMIN PANEL</h1>
+
+        <div class="admin-container">
+
+            <h2>Pending Posts</h2>
+
+            <div id="pending-posts">
+                <p>Loading pending posts...</p>
+            </div>
+
+        </div>
+    `;
+
+    await loadPendingPosts();
 }
 async function signUp() {
 
@@ -486,7 +518,130 @@ async function getCurrentProfile() {
 
     return profile;
 }
+async function loadPendingPosts() {
 
+    const container =
+        document.getElementById("pending-posts");
+
+    const { data: posts, error } =
+        await supabaseClient
+            .from("posts")
+            .select(`
+                id,
+                title,
+                description,
+                link,
+                category,
+                created_at,
+                profiles (
+                    username
+                )
+            `)
+            .eq("status", "pending")
+            .order("created_at", { ascending: true });
+
+    if (error) {
+        container.innerHTML = `
+            <p>Error loading posts: ${escapeHTML(error.message)}</p>
+        `;
+        return;
+    }
+
+    if (!posts || posts.length === 0) {
+        container.innerHTML = `
+            <p>No posts are currently waiting for review.</p>
+        `;
+        return;
+    }
+
+    container.innerHTML = posts.map(post => `
+
+        <div class="pending-post">
+
+            <h2>${escapeHTML(post.title)}</h2>
+
+            <p>
+                <strong>Category:</strong>
+                ${escapeHTML(post.category)}
+            </p>
+
+            <p>
+                <strong>Submitted by:</strong>
+                ${escapeHTML(post.profiles?.username || "Unknown")}
+            </p>
+
+            <p>
+                ${escapeHTML(post.description)}
+            </p>
+
+            ${
+                post.link
+                ? `
+                    <p>
+                        <strong>Submitted link:</strong><br>
+                        ${escapeHTML(post.link)}
+                    </p>
+                `
+                : `
+                    <p><strong>No link provided.</strong></p>
+                `
+            }
+
+            <p>
+                <strong>Submitted:</strong>
+                ${new Date(post.created_at).toLocaleString()}
+            </p>
+
+            <button onclick="approvePost('${post.id}')">
+                Approve
+            </button>
+
+            <button onclick="rejectPost('${post.id}')">
+                Reject
+            </button>
+
+        </div>
+
+    `).join("");
+}
+async function approvePost(postId) {
+
+    const { error } =
+        await supabaseClient
+            .from("posts")
+            .update({
+                status: "approved"
+            })
+            .eq("id", postId);
+
+    if (error) {
+
+        alert("Error approving post: " + error.message);
+
+        return;
+    }
+
+    await loadPendingPosts();
+}
+async function rejectPost(postId) {
+
+    const { error } =
+        await supabaseClient
+            .from("posts")
+            .update({
+                status: "rejected"
+            })
+            .eq("id", postId);
+
+    if (error) {
+
+        alert("Error rejecting post: " + error.message);
+
+        return;
+    }
+
+    await loadPendingPosts();
+}
 function escapeHTML(text) {
 
     const div = document.createElement("div");
