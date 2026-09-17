@@ -328,6 +328,11 @@ async function showAccountPage() {
                         Admin Panel
                     </button>
                 ` : ""}
+                ${!profile.is_tutor ? `
+                    <button onclick="showTutorApplication()">
+                        Apply to Become a Tutor
+                    </button>
+                ` : ""}
 
                 <button onclick="logOut()">Log Out</button>
             </div>
@@ -407,6 +412,97 @@ async function showAdminPage() {
     `;
 
     await loadPendingPosts();
+}
+async function showTutorApplication() {
+
+    content.innerHTML = `
+        <h1 class="title">TUTOR APPLICATION</h1>
+
+        <div class="account-container">
+
+            <h2>Apply to Become a Tutor</h2>
+
+            <p>
+                Tell us what subject or subjects you would like
+                to tutor and why you think you would be able to
+                help other students.
+            </p>
+
+            <textarea
+                id="tutor-reason"
+                placeholder="Tell us about yourself and what you would like to tutor..."
+            ></textarea>
+
+            <button onclick="submitTutorApplication()">
+                Submit Application
+            </button>
+
+            <button onclick="showAccountPage()">
+                Cancel
+            </button>
+
+            <p id="tutor-message"></p>
+
+        </div>
+    `;
+}
+async function submitTutorApplication() {
+
+    const reason =
+        document.getElementById("tutor-reason").value.trim();
+
+    const message =
+        document.getElementById("tutor-message");
+
+
+    if (!reason) {
+
+        message.textContent =
+            "Please explain why you would like to become a tutor.";
+
+        return;
+    }
+
+
+    message.textContent = "Submitting application...";
+
+
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+
+    if (userError || !user) {
+
+        message.textContent =
+            "You must be logged in to apply.";
+
+        return;
+    }
+
+
+    const { error } =
+        await supabaseClient
+            .from("tutor_applications")
+            .insert({
+                user_id: user.id,
+                reason: reason,
+                status: "pending"
+            });
+
+
+    if (error) {
+
+        message.textContent =
+            "Error: " + error.message;
+
+        return;
+    }
+
+
+    message.textContent =
+        "Your tutor application has been submitted!";
 }
 async function signUp() {
 
