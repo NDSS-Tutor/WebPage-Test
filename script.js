@@ -328,7 +328,8 @@ async function showAccountPage() {
                         Admin Panel
                     </button>
                 ` : ""}
-               ${profile.is_tutor ? `
+
+                ${profile.is_tutor ? `
                     <p><strong>Tutor Account</strong></p>
 
                     <button onclick="showTutorDashboard()">
