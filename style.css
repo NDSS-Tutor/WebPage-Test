@@ -111,6 +111,7 @@ body:has(.side_bar.open) #openSide {
 
 .posts-container{
     padding-left: 30%;
+    padding-right: 30%;
 }
 
 /* PHONE SIZING */
