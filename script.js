@@ -558,51 +558,144 @@ async function loadPendingPosts() {
 
         <div class="pending-post">
 
-            <h2>${escapeHTML(post.title)}</h2>
-
-            <p>
-                <strong>Category:</strong>
-                ${escapeHTML(post.category)}
-            </p>
+            <h2>Post Review</h2>
 
             <p>
                 <strong>Submitted by:</strong>
                 ${escapeHTML(post.profiles?.username || "Unknown")}
             </p>
 
-            <p>
-                ${escapeHTML(post.description)}
-            </p>
+            <label>Title</label>
 
-            ${
-                post.link
-                ? `
-                    <p>
-                        <strong>Submitted link:</strong><br>
-                        ${escapeHTML(post.link)}
-                    </p>
-                `
-                : `
-                    <p><strong>No link provided.</strong></p>
-                `
-            }
+            <input
+                type="text"
+                id="edit-title-${post.id}"
+                value="${escapeAttribute(post.title)}"
+            >
+
+            <label>Category</label>
+
+            <select id="edit-category-${post.id}">
+
+                <option value="Book"
+                    ${post.category === "Book" ? "selected" : ""}>
+                    Book
+                </option>
+
+                <option value="Website"
+                    ${post.category === "Website" ? "selected" : ""}>
+                    Website
+                </option>
+
+                <option value="Article"
+                    ${post.category === "Article" ? "selected" : ""}>
+                    Article
+                </option>
+
+                <option value="Video"
+                    ${post.category === "Video" ? "selected" : ""}>
+                    Video
+                </option>
+
+                <option value="Study Resource"
+                    ${post.category === "Study Resource" ? "selected" : ""}>
+                    Study Resource
+                </option>
+
+                <option value="Tool"
+                    ${post.category === "Tool" ? "selected" : ""}>
+                    Tool
+                </option>
+
+                <option value="Recommendation"
+                    ${post.category === "Recommendation" ? "selected" : ""}>
+                    Recommendation
+                </option>
+
+                <option value="Other"
+                    ${post.category === "Other" ? "selected" : ""}>
+                    Other
+                </option>
+
+            </select>
+
+            <label>Description</label>
+
+            <textarea
+                id="edit-description-${post.id}"
+            >${escapeHTML(post.description)}</textarea>
+
+            <label>Link</label>
+
+            <input
+                type="url"
+                id="edit-link-${post.id}"
+                value="${escapeAttribute(post.link || "")}"
+            >
 
             <p>
                 <strong>Submitted:</strong>
                 ${new Date(post.created_at).toLocaleString()}
             </p>
 
+            <button onclick="editPost('${post.id}')">
+                Save Changes
+            </button>
+
             <button onclick="approvePost('${post.id}')">
                 Approve
             </button>
 
             <button onclick="rejectPost('${post.id}')">
-                Reject
+                Reject & Delete
             </button>
 
         </div>
 
     `).join("");
+}
+async function editPost(postId) {
+
+    const title =
+        document.getElementById(`edit-title-${postId}`).value.trim();
+
+    const category =
+        document.getElementById(`edit-category-${postId}`).value;
+
+    const description =
+        document.getElementById(`edit-description-${postId}`).value.trim();
+
+    const link =
+        document.getElementById(`edit-link-${postId}`).value.trim();
+
+
+    if (!title || !description) {
+        alert("Title and description cannot be empty.");
+        return;
+    }
+
+
+    const { error } =
+        await supabaseClient
+            .from("posts")
+            .update({
+                title: title,
+                category: category,
+                description: description,
+                link: link || null
+            })
+            .eq("id", postId);
+
+
+    if (error) {
+        alert("Error saving changes: " + error.message);
+        return;
+    }
+
+
+    alert("Post updated successfully!");
+
+    await loadPendingPosts();
 }
 async function approvePost(postId) {
 
@@ -615,9 +708,7 @@ async function approvePost(postId) {
             .eq("id", postId);
 
     if (error) {
-
         alert("Error approving post: " + error.message);
-
         return;
     }
 
@@ -625,20 +716,26 @@ async function approvePost(postId) {
 }
 async function rejectPost(postId) {
 
+    const confirmed =
+        confirm("Are you sure you want to reject and permanently delete this post?");
+
+    if (!confirmed) {
+        return;
+    }
+
+
     const { error } =
         await supabaseClient
             .from("posts")
-            .update({
-                status: "rejected"
-            })
+            .delete()
             .eq("id", postId);
 
+
     if (error) {
-
-        alert("Error rejecting post: " + error.message);
-
+        alert("Error deleting post: " + error.message);
         return;
     }
+
 
     await loadPendingPosts();
 }
