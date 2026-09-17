@@ -293,7 +293,7 @@ async function showAccountPage() {
         const { data: profile, error } =
             await supabaseClient
                 .from("profiles")
-                .select("username")
+                .select("username, is_admin")
                 .eq("id", session.user.id)
                 .single();
 
