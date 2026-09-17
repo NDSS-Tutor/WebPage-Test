@@ -328,8 +328,8 @@ async function showAccountPage() {
                         Admin Panel
                     </button>
                 ` : ""}
-                ${profile.is_tutor ? `
-                    <p><strong>Tutor</strong></p>
+               ${profile.is_tutor ? `
+                    <p><strong>Tutor Account</strong></p>
 
                     <button onclick="showTutorDashboard()">
                         Tutor Dashboard
@@ -773,7 +773,7 @@ async function getCurrentProfile() {
     const { data: profile, error: profileError } =
         await supabaseClient
             .from("profiles")
-            .select("username, is_admin")
+            .select("username, is_admin, is_tutor")
             .eq("id", user.id)
             .single();
 
