@@ -321,6 +321,10 @@ async function showAccountPage() {
 
                 <p>Username: <strong>${profile.username}</strong></p>
 
+                ${profile.is_admin ? `
+                    <p><strong>Administrator</strong></p>
+                ` : ""}
+
                 <button onclick="logOut()">Log Out</button>
             </div>
         `;
@@ -457,6 +461,30 @@ async function logOut() {
     }
 
     showAccountPage();
+}
+async function getCurrentProfile() {
+
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+        return null;
+    }
+
+    const { data: profile, error: profileError } =
+        await supabaseClient
+            .from("profiles")
+            .select("username, is_admin")
+            .eq("id", user.id)
+            .single();
+
+    if (profileError) {
+        return null;
+    }
+
+    return profile;
 }
 
 function escapeHTML(text) {
