@@ -959,7 +959,7 @@ async function loadAdminTutoringRequests() {
         return;
     }
 
-    container.innerHTML = openrequests.map(request => `
+    container.innerHTML = openRequests.map(request => `
 
         <div class="tutoring-request">
 
@@ -1151,7 +1151,13 @@ async function loadTutorRequests() {
     }
 
 
-    if (!requests || requests.length === 0) {
+    const openRequests =
+        (requests || []).filter(
+            request => request.status === "open"
+        );
+
+
+    if (openRequests.length === 0) {
 
         container.innerHTML = `
             <p>
@@ -1165,7 +1171,7 @@ async function loadTutorRequests() {
 
 
     container.innerHTML =
-        requests.map(request => {
+        openRequests.map(request => {
 
             let buttons = "";
 
@@ -1176,12 +1182,6 @@ async function loadTutorRequests() {
                         onclick="acceptTutoringRequest('${request.id}')"
                     >
                         Accept
-                    </button>
-
-                    <button
-                        onclick="declineTutoringRequest('${request.id}')"
-                    >
-                        Decline
                     </button>
                 `;
             }
@@ -1579,10 +1579,14 @@ async function submitTutoringRequest() {
 
 
     const proposedStart =
-        `${date}T${startTime}:00`;
+        new Date(
+            `${date}T${startTime}:00`
+        ).toISOString();
 
     const proposedEnd =
-        `${date}T${endTime}:00`;
+        new Date(
+            `${date}T${endTime}:00`
+        ).toISOString();
 
 
     if (new Date(proposedEnd) <= new Date(proposedStart)) {
