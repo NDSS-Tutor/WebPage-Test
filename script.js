@@ -11,6 +11,8 @@ const content = document.getElementById("content");
 const Obutton = document.querySelector("#openSide");
 const Xbutton = document.querySelector("#closeSide");
 
+let calendarDate = new Date();
+
 Obutton.addEventListener("click", function () {
     sidebar.classList.add("open");
 });
@@ -19,7 +21,368 @@ Xbutton.addEventListener("click", function () {
     sidebar.classList.remove("open");
 });
 
+function previousMonth() {
 
+    calendarDate.setMonth(
+        calendarDate.getMonth() - 1
+    );
+
+    loadCalendar();
+}
+function nextMonth() {
+
+    calendarDate.setMonth(
+        calendarDate.getMonth() + 1
+    );
+
+    loadCalendar();
+}
+async function loadCalendar() {
+
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+
+    if (userError || !user) {
+
+        const days =
+            document.getElementById("calendar-days");
+
+        if (days) {
+            days.innerHTML = `
+                <p>You must be logged in to use Scheduling.</p>
+            `;
+        }
+
+        return;
+    }
+
+
+    const year =
+        calendarDate.getFullYear();
+
+    const month =
+        calendarDate.getMonth();
+
+
+    const monthName =
+        calendarDate.toLocaleString("default", {
+            month: "long"
+        });
+
+
+    document.getElementById(
+        "calendar-month"
+    ).textContent =
+        `${monthName} ${year}`;
+
+
+    /*
+     * Get the first and last day of the month.
+     */
+
+    const firstDay =
+        new Date(year, month, 1);
+
+    const lastDay =
+        new Date(year, month + 1, 0);
+
+
+    /*
+     * Personal calendar events
+     */
+
+    const {
+        data: personalEvents,
+        error: personalError
+    } = await supabaseClient
+        .from("calendar_events")
+        .select(`
+            id,
+            title,
+            description,
+            event_type,
+            start_time,
+            end_time
+        `)
+        .eq("owner_id", user.id);
+
+
+    if (personalError) {
+
+        console.error(
+            "Calendar event error:",
+            personalError
+        );
+
+        return;
+    }
+
+
+    /*
+     * Tutoring sessions involving this user.
+     */
+
+    const {
+        data: tutoringSessions,
+        error: tutoringError
+    } = await supabaseClient
+        .from("tutoring_sessions")
+        .select(`
+            id,
+            student_id,
+            tutor_id,
+            topic_id,
+            start_time,
+            end_time,
+            status,
+            topics (
+                name
+            )
+        `)
+        .or(
+            `student_id.eq.${user.id},tutor_id.eq.${user.id}`
+        )
+        .eq("status", "accepted");
+
+
+    if (tutoringError) {
+
+        console.error(
+            "Tutoring session error:",
+            tutoringError
+        );
+
+        return;
+    }
+
+
+    /*
+     * Create the calendar.
+     */
+
+    renderCalendar(
+        year,
+        month,
+        personalEvents || [],
+        tutoringSessions || []
+    );
+}
+function renderCalendar(
+    year,
+    month,
+    personalEvents,
+    tutoringSessions
+) {
+
+    const calendarDays =
+        document.getElementById("calendar-days");
+
+
+    if (!calendarDays) {
+        return;
+    }
+
+
+    calendarDays.innerHTML = "";
+
+
+    const firstDay =
+        new Date(year, month, 1);
+
+
+    /*
+     * JavaScript uses:
+     * Sunday = 0
+     * Monday = 1
+     *
+     * We want Monday to be the first
+     * column.
+     */
+
+    let startingDay =
+        firstDay.getDay();
+
+    startingDay =
+        startingDay === 0
+            ? 6
+            : startingDay - 1;
+
+
+    const daysInMonth =
+        new Date(
+            year,
+            month + 1,
+            0
+        ).getDate();
+
+
+    /*
+     * Empty cells before the first day.
+     */
+
+    for (
+        let i = 0;
+        i < startingDay;
+        i++
+    ) {
+
+        const emptyDay =
+            document.createElement("div");
+
+        emptyDay.className =
+            "calendar-day empty";
+
+        calendarDays.appendChild(
+            emptyDay
+        );
+    }
+
+
+    /*
+     * Actual days.
+     */
+
+    for (
+        let day = 1;
+        day <= daysInMonth;
+        day++
+    ) {
+
+        const dayElement =
+            document.createElement("div");
+
+        dayElement.className =
+            "calendar-day";
+
+
+        const dateNumber =
+            document.createElement("div");
+
+        dateNumber.className =
+            "calendar-date";
+
+        dateNumber.textContent =
+            day;
+
+
+        dayElement.appendChild(
+            dateNumber
+        );
+
+
+        /*
+         * Events occurring on this day.
+         */
+
+        const dayEvents =
+            personalEvents.filter(
+                event => {
+
+                    const eventDate =
+                        new Date(
+                            event.start_time
+                        );
+
+                    return (
+                        eventDate.getFullYear() === year &&
+                        eventDate.getMonth() === month &&
+                        eventDate.getDate() === day
+                    );
+                }
+            );
+
+
+        dayEvents.forEach(event => {
+
+            const eventElement =
+                document.createElement("div");
+
+            eventElement.className =
+                "calendar-event";
+
+
+            const start =
+                new Date(
+                    event.start_time
+                );
+
+
+            eventElement.textContent =
+                `${start.toLocaleTimeString([], {
+                    hour: "numeric",
+                    minute: "2-digit"
+                })} ${event.title}`;
+
+
+            dayElement.appendChild(
+                eventElement
+            );
+        });
+
+
+        /*
+         * Tutoring sessions.
+         */
+
+        const tutoringDay =
+            tutoringSessions.filter(
+                session => {
+
+                    const sessionDate =
+                        new Date(
+                            session.start_time
+                        );
+
+                    return (
+                        sessionDate.getFullYear() === year &&
+                        sessionDate.getMonth() === month &&
+                        sessionDate.getDate() === day
+                    );
+                }
+            );
+
+
+        tutoringDay.forEach(session => {
+
+            const eventElement =
+                document.createElement("div");
+
+            eventElement.className =
+                "calendar-event tutoring-event";
+
+
+            const start =
+                new Date(
+                    session.start_time
+                );
+
+
+            const topicName =
+                session.topics?.name ||
+                "Tutoring";
+
+
+            eventElement.textContent =
+                `${start.toLocaleTimeString([], {
+                    hour: "numeric",
+                    minute: "2-digit"
+                })} ${topicName} Tutoring`;
+
+
+            dayElement.appendChild(
+                eventElement
+            );
+        });
+
+
+        calendarDays.appendChild(
+            dayElement
+        );
+    }
+}
 function showPage(page){
     if (page === 'home'){
         content.innerHTML = `
@@ -50,6 +413,61 @@ function showPage(page){
             <h1 class="title">SITE INFO</h1>
         `;
     }
+}
+async function showCalendar() {
+
+    const schedulingContent =
+        document.getElementById("scheduling-content");
+
+    if (!schedulingContent) {
+        showSchedulingPage();
+        return;
+    }
+
+
+    schedulingContent.innerHTML = `
+
+        <div class="calendar-container">
+
+            <div class="calendar-header">
+
+                <button onclick="previousMonth()">
+                    ←
+                </button>
+
+                <h2 id="calendar-month"></h2>
+
+                <button onclick="nextMonth()">
+                    →
+                </button>
+
+            </div>
+
+
+            <div class="calendar-weekdays">
+
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+                <div>Sun</div>
+
+            </div>
+
+
+            <div
+                id="calendar-days"
+                class="calendar-days"
+            ></div>
+
+        </div>
+
+    `;
+
+
+    await loadCalendar();
 }
 async function showPostsPage() {
 
@@ -441,6 +859,30 @@ async function showAdminPage() {
     await loadTutorApplications();
     await loadAdminTutoringRequests();
 }
+async function showSchedulingPage() {
+
+    content.innerHTML = `
+        <h1 class="title">SCHEDULING</h1>
+
+        <div class="scheduling-navigation">
+
+            <button onclick="showCalendar()">
+                Calendar
+            </button>
+
+            <button onclick="showTutoringPage()">
+                Request Tutoring
+            </button>
+
+        </div>
+
+        <div id="scheduling-content">
+            <p>Loading calendar...</p>
+        </div>
+    `;
+
+    await showCalendar();
+}
 async function loadAdminTutoringRequests() {
 
     const container =
@@ -803,23 +1245,40 @@ async function reopenTutoringRequest(requestId) {
 }
 async function showTutoringPage() {
 
+    const schedulingContent =
+        document.getElementById("scheduling-content");
+
+    if (!schedulingContent) {
+        showSchedulingPage();
+        return;
+    }
+
+
     const {
         data: { user },
         error: userError
     } = await supabaseClient.auth.getUser();
 
-    // Make sure the user is logged in
+
     if (userError || !user) {
 
-        content.innerHTML = `
-            <h1 class="title">REQUEST TUTORING</h1>
-
+        schedulingContent.innerHTML = `
             <div class="account-container">
-                <p>You must be logged in to request tutoring.</p>
+
+                <h2>Request Tutoring</h2>
+
+                <p>
+                    You must be logged in to request tutoring.
+                </p>
 
                 <button onclick="showAccountPage()">
                     Go to Account
                 </button>
+
+                <button onclick="showCalendar()">
+                    Back to Calendar
+                </button>
+
             </div>
         `;
 
@@ -827,25 +1286,32 @@ async function showTutoringPage() {
     }
 
 
-    // Load available topics
-    const { data: topics, error: topicError } =
-        await supabaseClient
-            .from("topics")
-            .select("id, name")
-            .eq("active", true)
-            .order("name");
+    const {
+        data: topics,
+        error: topicError
+    } = await supabaseClient
+        .from("topics")
+        .select("id, name")
+        .eq("active", true)
+        .order("name");
 
 
     if (topicError) {
 
-        content.innerHTML = `
-            <h1 class="title">REQUEST TUTORING</h1>
-
+        schedulingContent.innerHTML = `
             <div class="account-container">
+
+                <h2>Request Tutoring</h2>
+
                 <p>
                     Error loading tutoring topics:
                     ${escapeHTML(topicError.message)}
                 </p>
+
+                <button onclick="showCalendar()">
+                    Back to Calendar
+                </button>
+
             </div>
         `;
 
@@ -853,26 +1319,7 @@ async function showTutoringPage() {
     }
 
 
-    // Make sure there are actually topics available
-    if (!topics || topics.length === 0) {
-
-        content.innerHTML = `
-            <h1 class="title">REQUEST TUTORING</h1>
-
-            <div class="account-container">
-                <p>
-                    There are currently no tutoring topics available.
-                </p>
-            </div>
-        `;
-
-        return;
-    }
-
-
-    // Display the tutoring request form
-    content.innerHTML = `
-        <h1 class="title">REQUEST TUTORING</h1>
+    schedulingContent.innerHTML = `
 
         <div class="account-container">
 
@@ -885,13 +1332,13 @@ async function showTutoringPage() {
 
 
             <label for="tutoring-topic">
-                Topic
+                Subject
             </label>
 
             <select id="tutoring-topic">
 
                 <option value="">
-                    Select a topic
+                    Select a subject
                 </option>
 
                 ${topics.map(topic => `
@@ -913,14 +1360,45 @@ async function showTutoringPage() {
             ></textarea>
 
 
+            <label for="tutoring-date">
+                Preferred Date
+            </label>
+
+            <input
+                type="date"
+                id="tutoring-date"
+            >
+
+
+            <label for="tutoring-start">
+                Preferred Start Time
+            </label>
+
+            <input
+                type="time"
+                id="tutoring-start"
+            >
+
+
+            <label for="tutoring-end">
+                Preferred End Time
+            </label>
+
+            <input
+                type="time"
+                id="tutoring-end"
+            >
+
+
+            <br><br>
+
             <button onclick="submitTutoringRequest()">
                 Submit Request
             </button>
 
-            <button onclick="showAccountPage()">
+            <button onclick="showCalendar()">
                 Cancel
             </button>
-
 
             <p id="tutoring-message"></p>
 
