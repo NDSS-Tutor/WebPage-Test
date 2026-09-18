@@ -4,6 +4,7 @@ html,body{
 }
 body{
     display:flex;
+    padding: 10%;
 }
 .content{
     flex: 1;
