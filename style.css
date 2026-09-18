@@ -9,7 +9,7 @@ body{
     flex: 1;
     background-color: red;
     min-height: 100vh;
-    margin: 10%
+    padding: 10%;
 }
 
 
