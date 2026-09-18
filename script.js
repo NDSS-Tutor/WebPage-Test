@@ -545,6 +545,48 @@ function showCreatePost() {
         </div>
     `;
 }
+async function dropTutoringSession(sessionId) {
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to drop this tutoring session? The tutoring request will be reopened for another tutor."
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    const { error } =
+        await supabaseClient
+            .rpc(
+                "drop_tutoring_session",
+                {
+                    session_id: Number(sessionId)
+                }
+            );
+
+
+    if (error) {
+
+        alert(
+            "Error dropping session: " +
+            error.message
+        );
+
+        return;
+    }
+
+
+    alert(
+        "The session has been dropped and the tutoring request has been reopened."
+    );
+
+
+    // Reload whatever tutor dashboard section
+    // is displaying the sessions/requests.
+    await loadTutorRequests();
+}
 async function createPost() {
 
     const title =
@@ -1046,10 +1088,6 @@ async function showTutorDashboard() {
 
             <button onclick="showTutorRequests()">
                 View Tutoring Requests
-            </button>
-
-            <button onclick="showSchedulingPage()">
-                View Calendar
             </button>
 
             <button onclick="showAccountPage()">
