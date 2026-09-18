@@ -1580,12 +1580,20 @@ async function submitTutoringRequest() {
 
     const proposedStart =
         new Date(
-            `${date}T${startTime}:00`
+            Number(date.split("-")[0]),
+            Number(date.split("-")[1]) - 1,
+            Number(date.split("-")[2]),
+            Number(startTime.split(":")[0]),
+            Number(startTime.split(":")[1])
         ).toISOString();
 
     const proposedEnd =
         new Date(
-            `${date}T${endTime}:00`
+            Number(date.split("-")[0]),
+            Number(date.split("-")[1]) - 1,
+            Number(date.split("-")[2]),
+            Number(endTime.split(":")[0]),
+            Number(endTime.split(":")[1])
         ).toISOString();
 
 
