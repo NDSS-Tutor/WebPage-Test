@@ -1612,16 +1612,14 @@ async function submitTutoringRequest() {
     }
 
 
-    const { error } =
+    const { data: requestId, error } =
         await supabaseClient
-            .from("tutoring_requests")
-            .insert({
-                student_id: user.id,
-                topic_id: Number(topicId),
-                description: description,
-                proposed_start: proposedStart,
-                proposed_end: proposedEnd,
-                status: "open"
+            .rpc("create_tutoring_request", {
+                p_topic_id: Number(topicId),
+                p_description: description,
+                p_date: date,
+                p_start_time: startTime,
+                p_end_time: endTime
             });
 
 
