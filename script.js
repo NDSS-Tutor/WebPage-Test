@@ -1578,43 +1578,11 @@ async function submitTutoringRequest() {
     }
 
 
-    function makeTorontoDate(date, time) {
-
-        const [year, month, day] =
-            date.split("-").map(Number);
-
-        const [hour, minute] =
-            time.split(":").map(Number);
-
-        const guess = new Date(
-            Date.UTC(
-                year,
-                month - 1,
-                day,
-                hour,
-                minute
-            )
-        );
-
-        const parts =
-            new Intl.DateTimeFormat("en-CA", {
-                timeZone: "America/Toronto",
-                timeZoneName: "longOffset"
-            }).formatToParts(guess);
-
-        const offset =
-            parts.find(
-                part => part.type === "timeZoneName"
-            ).value
-            .replace("GMT", "");
-
-        return `${date}T${time}:00${offset}`;
-    }
     const proposedStart =
-        makeTorontoDate(date, startTime);
+        `${date}T${startTime}:00-04:00`;
 
     const proposedEnd =
-        makeTorontoDate(date, endTime);
+        `${date}T${endTime}:00-04:00`;
 
     if (new Date(proposedEnd) <= new Date(proposedStart)) {
 
