@@ -4,13 +4,12 @@ html,body{
 }
 body{
     display:flex;
-    padding: 20px;
-    margin: 10%;
 }
 .content{
     flex: 1;
     background-color: red;
     min-height: 100vh;
+    margin: 10%
 }
 
 
