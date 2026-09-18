@@ -948,7 +948,7 @@ async function loadAdminTutoringRequests() {
         return;
     }
 
-    if (!requests || requests.length === 0) {
+    if (!openRequests || openRequests.length === 0) {
 
         container.innerHTML = `
             <p>
@@ -959,7 +959,7 @@ async function loadAdminTutoringRequests() {
         return;
     }
 
-    container.innerHTML = requests.map(request => `
+    container.innerHTML = openrequests.map(request => `
 
         <div class="tutoring-request">
 
