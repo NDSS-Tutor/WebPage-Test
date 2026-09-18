@@ -1578,24 +1578,43 @@ async function submitTutoringRequest() {
     }
 
 
+    function makeTorontoDate(date, time) {
+
+        const [year, month, day] =
+            date.split("-").map(Number);
+
+        const [hour, minute] =
+            time.split(":").map(Number);
+
+        const guess = new Date(
+            Date.UTC(
+                year,
+                month - 1,
+                day,
+                hour,
+                minute
+            )
+        );
+
+        const parts =
+            new Intl.DateTimeFormat("en-CA", {
+                timeZone: "America/Toronto",
+                timeZoneName: "longOffset"
+            }).formatToParts(guess);
+
+        const offset =
+            parts.find(
+                part => part.type === "timeZoneName"
+            ).value
+            .replace("GMT", "");
+
+        return `${date}T${time}:00${offset}`;
+    }
     const proposedStart =
-        new Date(
-            Number(date.split("-")[0]),
-            Number(date.split("-")[1]) - 1,
-            Number(date.split("-")[2]),
-            Number(startTime.split(":")[0]),
-            Number(startTime.split(":")[1])
-        ).toISOString();
+        makeTorontoDate(date, startTime);
 
     const proposedEnd =
-        new Date(
-            Number(date.split("-")[0]),
-            Number(date.split("-")[1]) - 1,
-            Number(date.split("-")[2]),
-            Number(endTime.split(":")[0]),
-            Number(endTime.split(":")[1])
-        ).toISOString();
-
+        makeTorontoDate(date, endTime);
 
     if (new Date(proposedEnd) <= new Date(proposedStart)) {
 
