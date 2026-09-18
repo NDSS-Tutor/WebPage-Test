@@ -395,10 +395,15 @@ async function showAdminPage() {
     const profile = await getCurrentProfile();
 
     if (!profile || !profile.is_admin) {
+
         content.innerHTML = `
             <h1 class="title">ACCESS DENIED</h1>
-            <p>You do not have permission to access the Admin Panel.</p>
+
+            <p>
+                You do not have permission to access the Admin Panel.
+            </p>
         `;
+
         return;
     }
 
@@ -421,11 +426,380 @@ async function showAdminPage() {
                 <p>Loading tutor applications...</p>
             </div>
 
+            <hr>
+
+            <h2>Tutoring Requests</h2>
+
+            <div id="admin-tutoring-requests">
+                <p>Loading tutoring requests...</p>
+            </div>
+
         </div>
     `;
 
     await loadPendingPosts();
     await loadTutorApplications();
+    await loadAdminTutoringRequests();
+}
+async function loadAdminTutoringRequests() {
+
+    const container =
+        document.getElementById(
+            "admin-tutoring-requests"
+        );
+
+    const { data: requests, error } =
+        await supabaseClient
+            .rpc("get_tutoring_requests");
+
+    if (error) {
+
+        container.innerHTML = `
+            <p>
+                Error loading tutoring requests:
+                ${escapeHTML(error.message)}
+            </p>
+        `;
+
+        return;
+    }
+
+    if (!requests || requests.length === 0) {
+
+        container.innerHTML = `
+            <p>
+                There are currently no tutoring requests.
+            </p>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = requests.map(request => `
+
+        <div class="tutoring-request">
+
+            <h3>
+                ${escapeHTML(request.topic_name)}
+            </h3>
+
+            <p>
+                <strong>Student:</strong>
+                ${escapeHTML(request.student_username)}
+            </p>
+
+            <p>
+                <strong>Description:</strong>
+            </p>
+
+            <p>
+                ${escapeHTML(request.description)}
+            </p>
+
+            <p>
+                <strong>Status:</strong>
+                ${escapeHTML(request.status)}
+            </p>
+
+            <p>
+                <strong>Submitted:</strong>
+                ${new Date(
+                    request.created_at
+                ).toLocaleString()}
+            </p>
+
+            ${
+                request.status === "open"
+                ? `
+                    <button
+                        onclick="adminCloseTutoringRequest('${request.id}')"
+                    >
+                        Close Request
+                    </button>
+                `
+                : `
+                    <button
+                        onclick="adminReopenTutoringRequest('${request.id}')"
+                    >
+                        Reopen Request
+                    </button>
+                `
+            }
+
+        </div>
+
+    `).join("");
+}
+async function adminCloseTutoringRequest(requestId) {
+
+    const confirmed = confirm(
+        "Close this tutoring request?"
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .rpc("update_tutoring_request_status", {
+                request_id: Number(requestId),
+                new_status: "closed"
+            });
+
+    if (error) {
+
+        alert(
+            "Error closing request: " +
+            error.message
+        );
+
+        return;
+    }
+
+    await loadAdminTutoringRequests();
+}
+async function adminReopenTutoringRequest(requestId) {
+
+    const { error } =
+        await supabaseClient
+            .rpc("update_tutoring_request_status", {
+                request_id: Number(requestId),
+                new_status: "open"
+            });
+
+    if (error) {
+
+        alert(
+            "Error reopening request: " +
+            error.message
+        );
+
+        return;
+    }
+
+    await loadAdminTutoringRequests();
+}
+async function showTutorDashboard() {
+
+    const profile = await getCurrentProfile();
+
+    if (!profile || !profile.is_tutor) {
+
+        content.innerHTML = `
+            <h1 class="title">ACCESS DENIED</h1>
+
+            <div class="account-container">
+                <p>You do not have permission to access the Tutor Dashboard.</p>
+            </div>
+        `;
+
+        return;
+    }
+
+    content.innerHTML = `
+        <h1 class="title">TUTOR DASHBOARD</h1>
+
+        <div class="account-container">
+
+            <button onclick="showTutorRequests()">
+                View Tutoring Requests
+            </button>
+
+            <button onclick="showSchedulingPage()">
+                View Calendar
+            </button>
+
+            <button onclick="showAccountPage()">
+                Back to Account
+            </button>
+
+        </div>
+    `;
+}
+async function showTutorRequests() {
+
+    const profile = await getCurrentProfile();
+
+    if (!profile || !profile.is_tutor) {
+
+        content.innerHTML = `
+            <h1 class="title">ACCESS DENIED</h1>
+        `;
+
+        return;
+    }
+
+    content.innerHTML = `
+        <h1 class="title">TUTORING REQUESTS</h1>
+
+        <div class="account-container">
+
+            <button onclick="showTutorDashboard()">
+                Back to Tutor Dashboard
+            </button>
+
+            <div id="tutor-requests">
+                <p>Loading tutoring requests...</p>
+            </div>
+
+        </div>
+    `;
+
+    await loadTutorRequests();
+}
+async function loadTutorRequests() {
+
+    const container =
+        document.getElementById("tutor-requests");
+
+    const { data: requests, error } =
+        await supabaseClient
+            .rpc("get_tutoring_requests");
+
+
+    if (error) {
+
+        container.innerHTML = `
+            <p>
+                Error loading tutoring requests:
+                ${escapeHTML(error.message)}
+            </p>
+        `;
+
+        return;
+    }
+
+
+    if (!requests || requests.length === 0) {
+
+        container.innerHTML = `
+            <p>
+                There are currently no tutoring requests
+                matching your subjects.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        requests.map(request => {
+
+            let buttons = "";
+
+            if (request.status === "open") {
+
+                buttons = `
+                    <button
+                        onclick="acceptTutoringRequest('${request.id}')"
+                    >
+                        Accept
+                    </button>
+
+                    <button
+                        onclick="declineTutoringRequest('${request.id}')"
+                    >
+                        Decline
+                    </button>
+                `;
+            }
+
+
+            return `
+
+                <div class="tutoring-request">
+
+                    <h2>
+                        ${escapeHTML(request.topic_name)}
+                    </h2>
+
+                    <p>
+                        <strong>Student:</strong>
+                        ${escapeHTML(request.student_username)}
+                    </p>
+
+                    <p>
+                        <strong>Request:</strong>
+                    </p>
+
+                    <p>
+                        ${escapeHTML(request.description)}
+                    </p>
+
+                    <p>
+                        <strong>Proposed Time:</strong>
+                        ${new Date(
+                            request.proposed_start
+                        ).toLocaleString()}
+                        -
+                        ${new Date(
+                            request.proposed_end
+                        ).toLocaleTimeString()}
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong>
+                        ${escapeHTML(request.status)}
+                    </p>
+
+                    ${buttons}
+
+                </div>
+
+            `;
+        }).join("");
+}
+async function closeTutoringRequest(requestId) {
+
+    const confirmed = confirm(
+        "Close this tutoring request?"
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .rpc("update_tutoring_request_status", {
+                request_id: Number(requestId),
+                new_status: "closed"
+            });
+
+    if (error) {
+
+        alert(
+            "Error closing request: " +
+            error.message
+        );
+
+        return;
+    }
+
+    await loadTutorRequests();
+}
+async function reopenTutoringRequest(requestId) {
+
+    const { error } =
+        await supabaseClient
+            .rpc("update_tutoring_request_status", {
+                request_id: Number(requestId),
+                new_status: "open"
+            });
+
+    if (error) {
+
+        alert(
+            "Error reopening request: " +
+            error.message
+        );
+
+        return;
+    }
+
+    await loadTutorRequests();
 }
 async function showTutoringPage() {
 
@@ -553,10 +927,88 @@ async function showTutoringPage() {
         </div>
     `;
 }
+async function acceptTutoringRequest(requestId) {
+
+    const confirmed =
+        confirm(
+            "Accept this tutoring session?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    const { error } =
+        await supabaseClient
+            .rpc(
+                "accept_tutoring_request",
+                {
+                    request_id: Number(requestId)
+                }
+            );
+
+
+    if (error) {
+
+        alert(
+            "Error accepting request: " +
+            error.message
+        );
+
+        return;
+    }
+
+
+    alert(
+        "Tutoring session accepted! It has been added to your calendar and the student's calendar."
+    );
+
+
+    await loadTutorRequests();
+}
+async function declineTutoringRequest(requestId) {
+
+    const confirmed =
+        confirm(
+            "Decline this tutoring request?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    const { error } =
+        await supabaseClient
+            .rpc(
+                "update_tutoring_request_status",
+                {
+                    request_id: Number(requestId),
+                    new_status: "declined"
+                }
+            );
+
+
+    if (error) {
+
+        alert(
+            "Error declining request: " +
+            error.message
+        );
+
+        return;
+    }
+
+
+    await loadTutorRequests();
+}
 async function submitTutoringRequest() {
 
     const topicId =
-        document.getElementById("tutoring-topic").value;
+        document
+            .getElementById("tutoring-topic")
+            .value;
 
     const description =
         document
@@ -564,21 +1016,34 @@ async function submitTutoringRequest() {
             .value
             .trim();
 
+    const date =
+        document
+            .getElementById("tutoring-date")
+            .value;
+
+    const startTime =
+        document
+            .getElementById("tutoring-start")
+            .value;
+
+    const endTime =
+        document
+            .getElementById("tutoring-end")
+            .value;
+
     const message =
         document.getElementById("tutoring-message");
 
 
-    // Validate topic
     if (!topicId) {
 
         message.textContent =
-            "Please select a topic.";
+            "Please select a subject.";
 
         return;
     }
 
 
-    // Validate description
     if (!description) {
 
         message.textContent =
@@ -588,11 +1053,35 @@ async function submitTutoringRequest() {
     }
 
 
+    if (!date || !startTime || !endTime) {
+
+        message.textContent =
+            "Please select a date and time.";
+
+        return;
+    }
+
+
+    const proposedStart =
+        `${date}T${startTime}:00`;
+
+    const proposedEnd =
+        `${date}T${endTime}:00`;
+
+
+    if (new Date(proposedEnd) <= new Date(proposedStart)) {
+
+        message.textContent =
+            "The end time must be after the start time.";
+
+        return;
+    }
+
+
     message.textContent =
         "Submitting tutoring request...";
 
 
-    // Get logged-in user
     const {
         data: { user },
         error: userError
@@ -602,13 +1091,12 @@ async function submitTutoringRequest() {
     if (userError || !user) {
 
         message.textContent =
-            "You must be logged in to submit a request.";
+            "You must be logged in.";
 
         return;
     }
 
 
-    // Create the request
     const { error } =
         await supabaseClient
             .from("tutoring_requests")
@@ -616,6 +1104,8 @@ async function submitTutoringRequest() {
                 student_id: user.id,
                 topic_id: Number(topicId),
                 description: description,
+                proposed_start: proposedStart,
+                proposed_end: proposedEnd,
                 status: "open"
             });
 
@@ -632,8 +1122,6 @@ async function submitTutoringRequest() {
     message.textContent =
         "Your tutoring request has been submitted!";
 
-
-    // Return to the page after a short delay
     setTimeout(() => {
         showTutoringPage();
     }, 1500);
@@ -912,18 +1400,28 @@ async function rejectTutorApplication(applicationId) {
 }
 async function showTutorApplication() {
 
-    const { data: topics, error } =
-        await supabaseClient
-            .from("topics")
-            .select("id, name")
-            .eq("active", true)
-            .order("name");
+    const {
+        data: topics,
+        error
+    } = await supabaseClient
+        .from("topics")
+        .select("id, name")
+        .eq("active", true)
+        .order("name");
 
     if (error) {
+
         content.innerHTML = `
             <h1 class="title">TUTOR APPLICATION</h1>
-            <p>Error loading topics: ${escapeHTML(error.message)}</p>
+
+            <div class="account-container">
+                <p>
+                    Error loading topics:
+                    ${escapeHTML(error.message)}
+                </p>
+            </div>
         `;
+
         return;
     }
 
@@ -935,36 +1433,39 @@ async function showTutorApplication() {
             <h2>Apply to Become a Tutor</h2>
 
             <p>
-                Select up to 3 subjects you would like to tutor.
+                Select up to three subjects that you would like
+                to tutor.
             </p>
 
             <div id="tutor-topics">
 
                 ${topics.map(topic => `
+
                     <label>
                         <input
                             type="checkbox"
                             name="tutor-topic"
                             value="${topic.id}"
-                            onchange="updateTopicCount()"
                         >
+
                         ${escapeHTML(topic.name)}
                     </label>
+
+                    <br>
+
                 `).join("")}
 
             </div>
 
-            <p id="topic-count">
-                0 / 3 topics selected
-            </p>
+            <br>
 
             <label for="tutor-reason">
-                Why would you be a good tutor?
+                Why would you like to become a tutor?
             </label>
 
             <textarea
                 id="tutor-reason"
-                placeholder="Tell us about yourself and what you would like to tutor..."
+                placeholder="Tell us about yourself and why you would be able to help other students..."
             ></textarea>
 
             <button onclick="submitTutorApplication()">
