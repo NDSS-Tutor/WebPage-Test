@@ -27,7 +27,7 @@ function showPage(page){
         `;
     }
     else if (page === 'scheduling'){
-    showTutoringPage();
+        showTutoringPage();
     }
     else if (page === 'resources'){
         showPostsPage();
@@ -426,39 +426,6 @@ async function showAdminPage() {
 
     await loadPendingPosts();
     await loadTutorApplications();
-}
-async function showTutorApplication() {
-
-    content.innerHTML = `
-        <h1 class="title">TUTOR APPLICATION</h1>
-
-        <div class="account-container">
-
-            <h2>Apply to Become a Tutor</h2>
-
-            <p>
-                Tell us what subject or subjects you would like
-                to tutor and why you think you would be able to
-                help other students.
-            </p>
-
-            <textarea
-                id="tutor-reason"
-                placeholder="Tell us about yourself and what you would like to tutor..."
-            ></textarea>
-
-            <button onclick="submitTutorApplication()">
-                Submit Application
-            </button>
-
-            <button onclick="showAccountPage()">
-                Cancel
-            </button>
-
-            <p id="tutor-message"></p>
-
-        </div>
-    `;
 }
 async function submitTutorApplication() {
 
