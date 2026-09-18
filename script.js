@@ -427,6 +427,217 @@ async function showAdminPage() {
     await loadPendingPosts();
     await loadTutorApplications();
 }
+async function showTutoringPage() {
+
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+    // Make sure the user is logged in
+    if (userError || !user) {
+
+        content.innerHTML = `
+            <h1 class="title">REQUEST TUTORING</h1>
+
+            <div class="account-container">
+                <p>You must be logged in to request tutoring.</p>
+
+                <button onclick="showAccountPage()">
+                    Go to Account
+                </button>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    // Load available topics
+    const { data: topics, error: topicError } =
+        await supabaseClient
+            .from("topics")
+            .select("id, name")
+            .eq("active", true)
+            .order("name");
+
+
+    if (topicError) {
+
+        content.innerHTML = `
+            <h1 class="title">REQUEST TUTORING</h1>
+
+            <div class="account-container">
+                <p>
+                    Error loading tutoring topics:
+                    ${escapeHTML(topicError.message)}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    // Make sure there are actually topics available
+    if (!topics || topics.length === 0) {
+
+        content.innerHTML = `
+            <h1 class="title">REQUEST TUTORING</h1>
+
+            <div class="account-container">
+                <p>
+                    There are currently no tutoring topics available.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    // Display the tutoring request form
+    content.innerHTML = `
+        <h1 class="title">REQUEST TUTORING</h1>
+
+        <div class="account-container">
+
+            <h2>Request Tutoring</h2>
+
+            <p>
+                Select the subject you need help with and
+                explain what you would like help on.
+            </p>
+
+
+            <label for="tutoring-topic">
+                Topic
+            </label>
+
+            <select id="tutoring-topic">
+
+                <option value="">
+                    Select a topic
+                </option>
+
+                ${topics.map(topic => `
+                    <option value="${topic.id}">
+                        ${escapeHTML(topic.name)}
+                    </option>
+                `).join("")}
+
+            </select>
+
+
+            <label for="tutoring-description">
+                What do you need help with?
+            </label>
+
+            <textarea
+                id="tutoring-description"
+                placeholder="Explain what you need help with..."
+            ></textarea>
+
+
+            <button onclick="submitTutoringRequest()">
+                Submit Request
+            </button>
+
+            <button onclick="showAccountPage()">
+                Cancel
+            </button>
+
+
+            <p id="tutoring-message"></p>
+
+        </div>
+    `;
+}
+async function submitTutoringRequest() {
+
+    const topicId =
+        document.getElementById("tutoring-topic").value;
+
+    const description =
+        document
+            .getElementById("tutoring-description")
+            .value
+            .trim();
+
+    const message =
+        document.getElementById("tutoring-message");
+
+
+    // Validate topic
+    if (!topicId) {
+
+        message.textContent =
+            "Please select a topic.";
+
+        return;
+    }
+
+
+    // Validate description
+    if (!description) {
+
+        message.textContent =
+            "Please explain what you need help with.";
+
+        return;
+    }
+
+
+    message.textContent =
+        "Submitting tutoring request...";
+
+
+    // Get logged-in user
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+
+    if (userError || !user) {
+
+        message.textContent =
+            "You must be logged in to submit a request.";
+
+        return;
+    }
+
+
+    // Create the request
+    const { error } =
+        await supabaseClient
+            .from("tutoring_requests")
+            .insert({
+                student_id: user.id,
+                topic_id: Number(topicId),
+                description: description,
+                status: "open"
+            });
+
+
+    if (error) {
+
+        message.textContent =
+            "Error: " + error.message;
+
+        return;
+    }
+
+
+    message.textContent =
+        "Your tutoring request has been submitted!";
+
+
+    // Return to the page after a short delay
+    setTimeout(() => {
+        showTutoringPage();
+    }, 1500);
+}
 async function submitTutorApplication() {
 
     const reason =
