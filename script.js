@@ -27,7 +27,7 @@ function showPage(page){
         `;
     }
     else if (page === 'scheduling'){
-        showTutoringPage();
+        showSchedulingPage();
     }
     else if (page === 'resources'){
         showPostsPage();
