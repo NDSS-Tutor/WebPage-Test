@@ -27,9 +27,7 @@ function showPage(page){
         `;
     }
     else if (page === 'scheduling'){
-        content.innerHTML = `
-            <h1>Scheduling</h1>
-        `;
+    showTutoringPage();
     }
     else if (page === 'resources'){
         showPostsPage();
@@ -470,6 +468,13 @@ async function submitTutorApplication() {
     const message =
         document.getElementById("tutor-message");
 
+    const selectedTopics =
+        Array.from(
+            document.querySelectorAll(
+                'input[name="tutor-topic"]:checked'
+            )
+        ).map(input => Number(input.value));
+
 
     if (!reason) {
 
@@ -480,7 +485,26 @@ async function submitTutorApplication() {
     }
 
 
-    message.textContent = "Submitting application...";
+    if (selectedTopics.length === 0) {
+
+        message.textContent =
+            "Please select at least one topic.";
+
+        return;
+    }
+
+
+    if (selectedTopics.length > 3) {
+
+        message.textContent =
+            "You can select a maximum of 3 topics.";
+
+        return;
+    }
+
+
+    message.textContent =
+        "Submitting application...";
 
 
     const {
@@ -498,20 +522,54 @@ async function submitTutorApplication() {
     }
 
 
-    const { error } =
-        await supabaseClient
-            .from("tutor_applications")
-            .insert({
-                user_id: user.id,
-                reason: reason,
-                status: "pending"
-            });
+    // Create the application
+    const {
+        data: application,
+        error: applicationError
+    } = await supabaseClient
+        .from("tutor_applications")
+        .insert({
+            user_id: user.id,
+            reason: reason,
+            status: "pending"
+        })
+        .select("id")
+        .single();
 
 
-    if (error) {
+    if (applicationError) {
 
         message.textContent =
-            "Error: " + error.message;
+            "Error: " + applicationError.message;
+
+        return;
+    }
+
+
+    // Add selected topics to the application
+    const topicRows =
+        selectedTopics.map(topicId => ({
+            application_id: application.id,
+            topic_id: topicId
+        }));
+
+
+    const { error: topicError } =
+        await supabaseClient
+            .from("tutor_application_topics")
+            .insert(topicRows);
+
+
+    if (topicError) {
+
+        // Remove the application if its topics failed
+        await supabaseClient
+            .from("tutor_applications")
+            .delete()
+            .eq("id", application.id);
+
+        message.textContent =
+            "Error saving topics: " + topicError.message;
 
         return;
     }
@@ -673,6 +731,106 @@ async function rejectTutorApplication(applicationId) {
 
 
     await loadTutorApplications();
+}
+async function showTutorApplication() {
+
+    const { data: topics, error } =
+        await supabaseClient
+            .from("topics")
+            .select("id, name")
+            .eq("active", true)
+            .order("name");
+
+    if (error) {
+        content.innerHTML = `
+            <h1 class="title">TUTOR APPLICATION</h1>
+            <p>Error loading topics: ${escapeHTML(error.message)}</p>
+        `;
+        return;
+    }
+
+    content.innerHTML = `
+        <h1 class="title">TUTOR APPLICATION</h1>
+
+        <div class="account-container">
+
+            <h2>Apply to Become a Tutor</h2>
+
+            <p>
+                Select up to 3 subjects you would like to tutor.
+            </p>
+
+            <div id="tutor-topics">
+
+                ${topics.map(topic => `
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="tutor-topic"
+                            value="${topic.id}"
+                            onchange="updateTopicCount()"
+                        >
+                        ${escapeHTML(topic.name)}
+                    </label>
+                `).join("")}
+
+            </div>
+
+            <p id="topic-count">
+                0 / 3 topics selected
+            </p>
+
+            <label for="tutor-reason">
+                Why would you be a good tutor?
+            </label>
+
+            <textarea
+                id="tutor-reason"
+                placeholder="Tell us about yourself and what you would like to tutor..."
+            ></textarea>
+
+            <button onclick="submitTutorApplication()">
+                Submit Application
+            </button>
+
+            <button onclick="showAccountPage()">
+                Cancel
+            </button>
+
+            <p id="tutor-message"></p>
+
+        </div>
+    `;
+}
+async function updateTopicCount() {
+
+    const selected =
+        document.querySelectorAll(
+            'input[name="tutor-topic"]:checked'
+        );
+
+    const count =
+        document.getElementById("topic-count");
+
+    count.textContent =
+        `${selected.length} / 3 topics selected`;
+
+    if (selected.length >= 3) {
+
+        document
+            .querySelectorAll('input[name="tutor-topic"]:not(:checked)')
+            .forEach(input => {
+                input.disabled = true;
+            });
+
+    } else {
+
+        document
+            .querySelectorAll('input[name="tutor-topic"]')
+            .forEach(input => {
+                input.disabled = false;
+            });
+    }
 }
 async function signUp() {
 
