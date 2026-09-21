@@ -465,7 +465,17 @@ async function showCalendar() {
         </div>
 
     `;
+    const dateInput = document.getElementById("tutoring-date");
 
+    const today = new Date();
+    const minDate = today.toISOString().split("T")[0];
+
+    const maxDateObj = new Date(today);
+    maxDateObj.setMonth(maxDateObj.getMonth() + 2);
+    const maxDate = maxDateObj.toISOString().split("T")[0];
+
+    dateInput.min = minDate;
+    dateInput.max = maxDate;
 
     await loadCalendar();
 }
@@ -1546,7 +1556,20 @@ async function submitTutoringRequest() {
         document
             .getElementById("tutoring-end")
             .value;
+    const selectedDate = new Date(`${date}T00:00:00`);
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const maxDate = new Date(today);
+    maxDate.setMonth(maxDate.getMonth() + 2);
+    maxDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today || selectedDate > maxDate) {
+        message.textContent =
+            "Tutoring requests can only be made for today through two months from today.";
+        return;
+    }
     const message =
         document.getElementById("tutoring-message");
 
