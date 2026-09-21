@@ -1579,10 +1579,10 @@ async function submitTutoringRequest() {
 
 
     const proposedStart =
-        `${date}T${startTime}:00-04:00`;
+        `${date}T${startTime}:00+04:00`;
 
     const proposedEnd =
-        `${date}T${endTime}:00-04:00`;
+        `${date}T${endTime}:00+04:00`;
 
     if (new Date(proposedEnd) <= new Date(proposedStart)) {
 
