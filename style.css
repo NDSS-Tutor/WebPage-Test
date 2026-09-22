@@ -131,7 +131,7 @@ body {
     border: none;
     border-radius: 10px;
 
-    background-color: color(var(--wood));
+    background-color: var(--sage-dark);
 
     cursor: pointer;
 
@@ -413,7 +413,7 @@ button:active {
 
     color: var(--forest);
 
-    background-color: #e7e1d5;
+    background-color: #e3e9df;
 
     border-bottom: 1px solid var(--border);
 }
@@ -458,14 +458,14 @@ button:active {
 
 
 .calendar-day:hover {
-    background-color: #f1eee5;
+    background-color: #f0f3ed;
 }
 
 
 /* Empty calendar cells */
 
 .calendar-day.empty {
-    background-color: #e8e4db;
+    background-color: #e7ebe4;
 }
 
 
