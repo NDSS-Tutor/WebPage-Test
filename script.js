@@ -1556,6 +1556,8 @@ async function submitTutoringRequest() {
         document
             .getElementById("tutoring-end")
             .value;
+    const message =
+        document.getElementById("tutoring-message");
     const selectedDate = new Date(`${date}T00:00:00`);
 
     const today = new Date();
@@ -1570,9 +1572,6 @@ async function submitTutoringRequest() {
             "Tutoring requests can only be made for today through two months from today.";
         return;
     }
-    const message =
-        document.getElementById("tutoring-message");
-
 
     if (!topicId) {
 
