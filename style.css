@@ -84,7 +84,7 @@ body {
     padding: 0;
     gap: 14px;
 
-    background-color: var(--wood-light);
+    background-color: var(--wood-dark);
 
     overflow: hidden;
     overflow-y: auto;
