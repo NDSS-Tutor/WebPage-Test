@@ -1009,16 +1009,6 @@ async function openSessionDetails(
         <div class="session-tabs">
 
             <button
-                class="session-tab active"
-                onclick="showSessionTab(
-                    'messages',
-                    '${session.id}'
-                )"
-            >
-                💬 Messages
-            </button>
-
-            <button
                 class="session-tab"
                 onclick="showSessionTab(
                     'notes',
@@ -1057,7 +1047,7 @@ async function openSessionDetails(
 
 
     await showSessionTab(
-        "messages",
+        "notes",
         session.id
     );
 
@@ -1196,17 +1186,6 @@ async function showSessionTab(
     if (!container) {
         return;
     }
-
-
-    if (tab === "messages") {
-
-        await renderSessionMessages(
-            sessionId
-        );
-
-        return;
-    }
-
 
     if (tab === "notes") {
 
