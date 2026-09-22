@@ -2023,9 +2023,7 @@ function showPage(page) {
 
     else if (page === "tools") {
 
-        content.innerHTML = `
-            <h1>Study Tools</h1>
-        `;
+        showStudyToolsPage();
 
     }
 
@@ -2053,6 +2051,2213 @@ function showPage(page) {
     }
 }
 
+/* =========================================================
+   STUDY TOOLS
+   ========================================================= */
+
+const STUDY_NOTES_STORAGE_KEY =
+    "site19_study_notes_v1";
+
+const STUDY_FLASHCARDS_STORAGE_KEY =
+    "site19_flashcards_v1";
+
+
+let studyNotes = [];
+let studyFlashcards = [];
+
+let studyFlashcardIndex = 0;
+let studyFlashcardFlipped = false;
+
+let studyTimerInterval = null;
+
+let studyTimerState = {
+    mode: "study",
+    studyMinutes: 25,
+    breakMinutes: 5,
+    remainingSeconds: 25 * 60,
+    running: false
+};
+
+
+/* =========================================================
+   STUDY TOOLS DATA
+   ========================================================= */
+
+function loadStudyToolsData() {
+
+    try {
+
+        const savedNotes =
+            localStorage.getItem(
+                STUDY_NOTES_STORAGE_KEY
+            );
+
+        const savedFlashcards =
+            localStorage.getItem(
+                STUDY_FLASHCARDS_STORAGE_KEY
+            );
+
+        studyNotes =
+            savedNotes
+                ? JSON.parse(savedNotes)
+                : [];
+
+        studyFlashcards =
+            savedFlashcards
+                ? JSON.parse(savedFlashcards)
+                : [];
+
+        if (!Array.isArray(studyNotes)) {
+            studyNotes = [];
+        }
+
+        if (!Array.isArray(studyFlashcards)) {
+            studyFlashcards = [];
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Error loading Study Tools data:",
+            error
+        );
+
+        studyNotes = [];
+        studyFlashcards = [];
+    }
+}
+
+
+function saveStudyNotes() {
+
+    try {
+
+        localStorage.setItem(
+            STUDY_NOTES_STORAGE_KEY,
+            JSON.stringify(studyNotes)
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Error saving study notes:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+function saveStudyFlashcards() {
+
+    try {
+
+        localStorage.setItem(
+            STUDY_FLASHCARDS_STORAGE_KEY,
+            JSON.stringify(studyFlashcards)
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Error saving flashcards:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+/* =========================================================
+   STUDY TOOLS MAIN PAGE
+   ========================================================= */
+
+function showStudyToolsPage() {
+
+    loadStudyToolsData();
+
+    content.innerHTML = `
+
+        <h1 class="title">
+            STUDY TOOLS
+        </h1>
+
+        <div class="study-tools-navigation">
+
+            <button
+                type="button"
+                class="study-tool-nav-button active"
+                data-tool="notes"
+                onclick="showNoteTool()"
+            >
+                Note Taking
+            </button>
+
+            <button
+                type="button"
+                class="study-tool-nav-button"
+                data-tool="flashcards"
+                onclick="showFlashcardsTool()"
+            >
+                Flashcards
+            </button>
+
+            <button
+                type="button"
+                class="study-tool-nav-button"
+                data-tool="timer"
+                onclick="showStudyTimerTool()"
+            >
+                Study Timer
+            </button>
+
+        </div>
+
+        <div id="study-tools-content">
+
+            <p>
+                Loading Study Tools...
+            </p>
+
+        </div>
+
+    `;
+
+    showNoteTool();
+}
+
+
+/* =========================================================
+   STUDY TOOL NAVIGATION
+   ========================================================= */
+
+function setStudyToolNavigation(activeTool) {
+
+    document
+        .querySelectorAll(
+            ".study-tool-nav-button"
+        )
+        .forEach(button => {
+
+            const isActive =
+                button.dataset.tool === activeTool;
+
+            button.classList.toggle(
+                "active",
+                isActive
+            );
+        });
+}
+
+
+function getStudyToolContent() {
+
+    return document.getElementById(
+        "study-tools-content"
+    );
+}
+
+
+/* =========================================================
+   NOTE-TAKING METHODS
+   ========================================================= */
+
+const STUDY_NOTE_METHODS = {
+
+    freewriting: {
+        name: "Freewriting",
+        description:
+            "Write continuously in one large space. Best for getting ideas down quickly without worrying about structure."
+    },
+
+    cornell: {
+        name: "Cornell Notes",
+        description:
+            "Separate your notes into main ideas, supporting details, and a final summary."
+    },
+
+    outline: {
+        name: "Outline",
+        description:
+            "Organize information from broad topics to subtopics using headings and supporting points."
+    },
+
+    charting: {
+        name: "Charting",
+        description:
+            "Compare information in columns so related facts are easy to scan and review."
+    },
+
+    sentence: {
+        name: "Sentence Method",
+        description:
+            "Record each important idea as a separate numbered sentence."
+    }
+};
+
+
+/* =========================================================
+   NOTE-TAKING PAGE
+   ========================================================= */
+
+function showNoteTool(existingNote = null) {
+
+    setStudyToolNavigation("notes");
+
+    const container =
+        getStudyToolContent();
+
+    if (!container) {
+        return;
+    }
+
+    const selectedMethod =
+        existingNote?.method ||
+        "freewriting";
+
+    container.innerHTML = `
+
+        <div class="study-tool-panel note-tool-panel">
+
+            <div class="study-tool-header">
+
+                <div>
+
+                    <h2>
+                        Note Taking
+                    </h2>
+
+                    <p>
+                        Choose a note-taking structure that fits what you are studying.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="note-method-selector">
+
+                <label for="note-method">
+                    Note-taking method
+                </label>
+
+                <select
+                    id="note-method"
+                    onchange="renderNoteMethod()"
+                >
+
+                    ${Object.entries(STUDY_NOTE_METHODS).map(
+                        ([key, method]) => `
+                            <option
+                                value="${key}"
+                                ${
+                                    selectedMethod === key
+                                        ? "selected"
+                                        : ""
+                                }
+                            >
+                                ${method.name}
+                            </option>
+                        `
+                    ).join("")}
+
+                </select>
+
+                <p
+                    id="note-method-description"
+                    class="study-tool-description"
+                ></p>
+
+            </div>
+
+            <label for="note-title">
+                Note title
+            </label>
+
+            <input
+                id="note-title"
+                type="text"
+                maxlength="120"
+                placeholder="e.g. Photosynthesis Review"
+                value="${escapeAttribute(
+                    existingNote?.title || ""
+                )}"
+            >
+
+            <div id="note-method-fields"></div>
+
+            <div class="study-tool-actions">
+
+                <button
+                    type="button"
+                    onclick="saveCurrentStudyNote()"
+                >
+                    Save Note
+                </button>
+
+                <button
+                    type="button"
+                    class="secondary-tool-button"
+                    onclick="clearStudyNoteForm()"
+                >
+                    Clear
+                </button>
+
+            </div>
+
+            <p
+                id="note-save-message"
+                class="study-tool-message"
+            ></p>
+
+        </div>
+
+        <div class="study-tool-panel saved-notes-panel">
+
+            <div class="study-tool-header">
+
+                <div>
+
+                    <h2>
+                        Saved Notes
+                    </h2>
+
+                    <p>
+                        Notes are saved in this browser.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div id="saved-notes-list"></div>
+
+        </div>
+
+    `;
+
+    renderNoteMethod(existingNote);
+    renderSavedNotes();
+}
+
+
+/* =========================================================
+   NOTE METHOD RENDERING
+   ========================================================= */
+
+function renderNoteMethod(existingNote = null) {
+
+    const methodSelect =
+        document.getElementById(
+            "note-method"
+        );
+
+    const fields =
+        document.getElementById(
+            "note-method-fields"
+        );
+
+    const description =
+        document.getElementById(
+            "note-method-description"
+        );
+
+    if (!methodSelect || !fields) {
+        return;
+    }
+
+    const method =
+        methodSelect.value;
+
+    if (description) {
+
+        description.textContent =
+            STUDY_NOTE_METHODS[method]?.description ||
+            "";
+    }
+
+    const savedFields =
+        existingNote?.fields || {};
+
+
+    /* ---------------------------------------------------------
+       FREEWRITING
+       --------------------------------------------------------- */
+
+    if (method === "freewriting") {
+
+        fields.innerHTML = `
+
+            <label for="note-freewriting">
+                Notes
+            </label>
+
+            <textarea
+                id="note-freewriting"
+                class="study-note-large-textarea"
+                placeholder="Start writing..."
+            >${escapeHTML(
+                savedFields.text || ""
+            )}</textarea>
+
+        `;
+
+    }
+
+
+    /* ---------------------------------------------------------
+       CORNELL
+       --------------------------------------------------------- */
+
+    else if (method === "cornell") {
+
+        fields.innerHTML = `
+
+            <div class="cornell-notes-layout">
+
+                <div class="cornell-main-ideas">
+
+                    <label for="note-cornell-main">
+                        Main Ideas / Questions
+                    </label>
+
+                    <textarea
+                        id="note-cornell-main"
+                        placeholder="Key terms, questions, headings..."
+                    >${escapeHTML(
+                        savedFields.mainIdeas || ""
+                    )}</textarea>
+
+                </div>
+
+                <div class="cornell-details">
+
+                    <label for="note-cornell-details">
+                        Details / Notes
+                    </label>
+
+                    <textarea
+                        id="note-cornell-details"
+                        placeholder="Explanations, examples, evidence, definitions..."
+                    >${escapeHTML(
+                        savedFields.details || ""
+                    )}</textarea>
+
+                </div>
+
+                <div class="cornell-summary">
+
+                    <label for="note-cornell-summary">
+                        Summary
+                    </label>
+
+                    <textarea
+                        id="note-cornell-summary"
+                        placeholder="Summarize the main ideas in your own words..."
+                    >${escapeHTML(
+                        savedFields.summary || ""
+                    )}</textarea>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* ---------------------------------------------------------
+       OUTLINE
+       --------------------------------------------------------- */
+
+    else if (method === "outline") {
+
+        fields.innerHTML = `
+
+            <label for="note-outline">
+                Outline
+            </label>
+
+            <textarea
+                id="note-outline"
+                class="study-note-large-textarea"
+                placeholder="I. Main topic
+    A. Subtopic
+        1. Supporting detail
+    B. Subtopic..."
+            >${escapeHTML(
+                savedFields.text || ""
+            )}</textarea>
+
+            <p class="study-tool-hint">
+                Use indentation, numbering, or headings to show relationships between ideas.
+            </p>
+
+        `;
+
+    }
+
+
+    /* ---------------------------------------------------------
+       CHARTING
+       --------------------------------------------------------- */
+
+    else if (method === "charting") {
+
+        const rows =
+            Array.isArray(savedFields.rows) &&
+            savedFields.rows.length
+                ? savedFields.rows
+                : [
+                    ["", "", ""],
+                    ["", "", ""],
+                    ["", "", ""]
+                ];
+
+        fields.innerHTML = `
+
+            <div class="charting-table-wrapper">
+
+                <table class="study-chart-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Topic
+                            </th>
+
+                            <th>
+                                Key Information
+                            </th>
+
+                            <th>
+                                Details / Examples
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="charting-rows">
+
+                        ${rows.map(
+                            row => `
+                                <tr>
+
+                                    <td>
+
+                                        <textarea
+                                            class="chart-topic"
+                                            placeholder="Topic"
+                                        >${escapeHTML(
+                                            row[0] || ""
+                                        )}</textarea>
+
+                                    </td>
+
+                                    <td>
+
+                                        <textarea
+                                            class="chart-key"
+                                            placeholder="Key information"
+                                        >${escapeHTML(
+                                            row[1] || ""
+                                        )}</textarea>
+
+                                    </td>
+
+                                    <td>
+
+                                        <textarea
+                                            class="chart-details"
+                                            placeholder="Details"
+                                        >${escapeHTML(
+                                            row[2] || ""
+                                        )}</textarea>
+
+                                    </td>
+
+                                </tr>
+                            `
+                        ).join("")}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <button
+                type="button"
+                class="secondary-tool-button"
+                onclick="addChartingRow()"
+            >
+                + Add Row
+            </button>
+
+        `;
+
+    }
+
+
+    /* ---------------------------------------------------------
+       SENTENCE METHOD
+       --------------------------------------------------------- */
+
+    else if (method === "sentence") {
+
+        fields.innerHTML = `
+
+            <label for="note-sentence">
+                Notes
+            </label>
+
+            <textarea
+                id="note-sentence"
+                class="study-note-large-textarea"
+                placeholder="1. The first important idea...
+2. Another important idea...
+3. A supporting example..."
+            >${escapeHTML(
+                savedFields.text || ""
+            )}</textarea>
+
+            <p class="study-tool-hint">
+                Put each important fact or idea on its own line.
+            </p>
+
+        `;
+    }
+}
+
+
+/* =========================================================
+   CHARTING
+   ========================================================= */
+
+function addChartingRow() {
+
+    const tbody =
+        document.getElementById(
+            "charting-rows"
+        );
+
+    if (!tbody) {
+        return;
+    }
+
+    const row =
+        document.createElement("tr");
+
+    row.innerHTML = `
+
+        <td>
+
+            <textarea
+                class="chart-topic"
+                placeholder="Topic"
+            ></textarea>
+
+        </td>
+
+        <td>
+
+            <textarea
+                class="chart-key"
+                placeholder="Key information"
+            ></textarea>
+
+        </td>
+
+        <td>
+
+            <textarea
+                class="chart-details"
+                placeholder="Details"
+            ></textarea>
+
+        </td>
+
+    `;
+
+    tbody.appendChild(row);
+}
+
+
+/* =========================================================
+   COLLECT NOTE DATA
+   ========================================================= */
+
+function collectCurrentStudyNoteFields() {
+
+    const method =
+        document.getElementById(
+            "note-method"
+        )?.value;
+
+    if (!method) {
+        return null;
+    }
+
+
+    if (method === "freewriting") {
+
+        return {
+
+            text:
+                document.getElementById(
+                    "note-freewriting"
+                )?.value || ""
+
+        };
+
+    }
+
+
+    if (method === "cornell") {
+
+        return {
+
+            mainIdeas:
+                document.getElementById(
+                    "note-cornell-main"
+                )?.value || "",
+
+            details:
+                document.getElementById(
+                    "note-cornell-details"
+                )?.value || "",
+
+            summary:
+                document.getElementById(
+                    "note-cornell-summary"
+                )?.value || ""
+
+        };
+
+    }
+
+
+    if (method === "outline") {
+
+        return {
+
+            text:
+                document.getElementById(
+                    "note-outline"
+                )?.value || ""
+
+        };
+
+    }
+
+
+    if (method === "charting") {
+
+        const topics =
+            document.querySelectorAll(
+                ".chart-topic"
+            );
+
+        const keys =
+            document.querySelectorAll(
+                ".chart-key"
+            );
+
+        const details =
+            document.querySelectorAll(
+                ".chart-details"
+            );
+
+        const rows = [];
+
+        for (
+            let i = 0;
+            i < topics.length;
+            i++
+        ) {
+
+            rows.push([
+
+                topics[i].value,
+
+                keys[i]?.value || "",
+
+                details[i]?.value || ""
+
+            ]);
+
+        }
+
+        return {
+            rows: rows
+        };
+    }
+
+
+    if (method === "sentence") {
+
+        return {
+
+            text:
+                document.getElementById(
+                    "note-sentence"
+                )?.value || ""
+
+        };
+
+    }
+
+    return null;
+}
+
+
+/* =========================================================
+   SAVE NOTE
+   ========================================================= */
+
+function saveCurrentStudyNote() {
+
+    const titleInput =
+        document.getElementById(
+            "note-title"
+        );
+
+    const methodInput =
+        document.getElementById(
+            "note-method"
+        );
+
+    const message =
+        document.getElementById(
+            "note-save-message"
+        );
+
+    if (!titleInput || !methodInput) {
+        return;
+    }
+
+    const title =
+        titleInput.value.trim();
+
+    const method =
+        methodInput.value;
+
+    const fields =
+        collectCurrentStudyNoteFields();
+
+
+    if (!title) {
+
+        if (message) {
+
+            message.textContent =
+                "Please enter a title for the note.";
+
+        }
+
+        return;
+    }
+
+
+    if (!fields) {
+        return;
+    }
+
+
+    const note = {
+
+        id:
+            "note-" +
+            Date.now() +
+            "-" +
+            Math.random()
+                .toString(36)
+                .substring(2, 8),
+
+        title: title,
+
+        method: method,
+
+        fields: fields,
+
+        createdAt:
+            new Date().toISOString()
+
+    };
+
+
+    studyNotes.unshift(note);
+
+
+    if (!saveStudyNotes()) {
+
+        studyNotes.shift();
+
+        if (message) {
+
+            message.textContent =
+                "The note could not be saved in this browser.";
+
+        }
+
+        return;
+    }
+
+
+    if (message) {
+
+        message.textContent =
+            "Note saved.";
+
+    }
+
+
+    renderSavedNotes();
+}
+
+/* =========================================================
+   CLEAR / OPEN / DELETE NOTES
+   ========================================================= */
+
+function clearStudyNoteForm() {
+
+    showNoteTool();
+}
+
+
+function openStudyNote(noteId) {
+
+    const note =
+        studyNotes.find(
+            savedNote =>
+                savedNote.id === noteId
+        );
+
+    if (!note) {
+        return;
+    }
+
+    showNoteTool(note);
+}
+
+
+function deleteStudyNote(noteId) {
+
+    const noteExists =
+        studyNotes.some(
+            note =>
+                note.id === noteId
+        );
+
+    if (!noteExists) {
+        return;
+    }
+
+    studyNotes =
+        studyNotes.filter(
+            note =>
+                note.id !== noteId
+        );
+
+    saveStudyNotes();
+
+    renderSavedNotes();
+}
+
+
+/* =========================================================
+   DISPLAY SAVED NOTES
+   ========================================================= */
+
+function renderSavedNotes() {
+
+    const container =
+        document.getElementById(
+            "saved-notes-list"
+        );
+
+    if (!container) {
+        return;
+    }
+
+
+    if (!studyNotes.length) {
+
+        container.innerHTML = `
+
+            <div class="study-tool-empty-state">
+
+                No saved notes yet.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        studyNotes.map(
+            note => `
+
+                <div class="saved-note-card">
+
+                    <div>
+
+                        <h3>
+                            ${escapeHTML(
+                                note.title
+                            )}
+                        </h3>
+
+                        <span
+                            class="study-note-method-badge"
+                        >
+                            ${escapeHTML(
+                                STUDY_NOTE_METHODS[
+                                    note.method
+                                ]?.name ||
+                                "Note"
+                            )}
+                        </span>
+
+                        <p>
+
+                            ${new Date(
+                                note.createdAt
+                            ).toLocaleString()}
+
+                        </p>
+
+                    </div>
+
+                    <div class="saved-note-actions">
+
+                        <button
+                            type="button"
+                            onclick="openStudyNote('${escapeAttribute(note.id)}')"
+                        >
+                            Open
+                        </button>
+
+                        <button
+                            type="button"
+                            class="danger-tool-button"
+                            onclick="deleteStudyNote('${escapeAttribute(note.id)}')"
+                        >
+                            Delete
+                        </button>
+
+                    </div>
+
+                </div>
+
+            `
+        ).join("");
+}
+
+
+/* =========================================================
+   FLASHCARDS
+   ========================================================= */
+
+function showFlashcardsTool() {
+
+    setStudyToolNavigation("flashcards");
+
+    loadStudyToolsData();
+
+    const container =
+        getStudyToolContent();
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = `
+
+        <div class="study-tool-panel">
+
+            <div class="study-tool-header">
+
+                <div>
+
+                    <h2>
+                        Flashcards
+                    </h2>
+
+                    <p>
+                        Create cards, then switch to study mode to review them.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="flashcard-create-grid">
+
+                <div>
+
+                    <label for="flashcard-front">
+                        Front
+                    </label>
+
+                    <textarea
+                        id="flashcard-front"
+                        placeholder="Question, term, or concept"
+                    ></textarea>
+
+                </div>
+
+                <div>
+
+                    <label for="flashcard-back">
+                        Back
+                    </label>
+
+                    <textarea
+                        id="flashcard-back"
+                        placeholder="Answer, definition, or explanation"
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+            <div class="study-tool-actions">
+
+                <button
+                    type="button"
+                    onclick="addStudyFlashcard()"
+                >
+                    Add Flashcard
+                </button>
+
+                <button
+                    type="button"
+                    class="secondary-tool-button"
+                    onclick="clearFlashcardForm()"
+                >
+                    Clear
+                </button>
+
+            </div>
+
+            <p
+                id="flashcard-message"
+                class="study-tool-message"
+            ></p>
+
+        </div>
+
+
+        <div class="study-tool-panel">
+
+            <div
+                class="study-tool-header flashcard-list-header"
+            >
+
+                <div>
+
+                    <h2>
+                        Your Cards
+                    </h2>
+
+                    <p>
+
+                        ${studyFlashcards.length}
+                        ${
+                            studyFlashcards.length === 1
+                                ? "card"
+                                : "cards"
+                        }
+
+                    </p>
+
+                </div>
+
+                ${
+                    studyFlashcards.length
+                        ? `
+
+                            <button
+                                type="button"
+                                onclick="shuffleStudyFlashcards()"
+                            >
+                                Shuffle
+                            </button>
+
+                        `
+                        : ""
+                }
+
+            </div>
+
+            <div id="flashcard-list"></div>
+
+        </div>
+
+
+        <div
+            class="study-tool-panel flashcard-study-panel"
+        >
+
+            <div class="study-tool-header">
+
+                <div>
+
+                    <h2>
+                        Study Mode
+                    </h2>
+
+                    <p>
+                        Click the card to reveal the answer.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div id="flashcard-study-area"></div>
+
+        </div>
+
+    `;
+
+
+    renderFlashcardList();
+
+    renderFlashcardStudyArea();
+}
+
+
+/* =========================================================
+   ADD FLASHCARD
+   ========================================================= */
+
+function addStudyFlashcard() {
+
+    const frontInput =
+        document.getElementById(
+            "flashcard-front"
+        );
+
+    const backInput =
+        document.getElementById(
+            "flashcard-back"
+        );
+
+    const message =
+        document.getElementById(
+            "flashcard-message"
+        );
+
+    if (!frontInput || !backInput) {
+        return;
+    }
+
+
+    const front =
+        frontInput.value.trim();
+
+    const back =
+        backInput.value.trim();
+
+
+    if (!front || !back) {
+
+        if (message) {
+
+            message.textContent =
+                "Please enter both the front and back of the card.";
+
+        }
+
+        return;
+    }
+
+
+    studyFlashcards.push({
+
+        id:
+            "card-" +
+            Date.now() +
+            "-" +
+            Math.random()
+                .toString(36)
+                .substring(2, 8),
+
+        front: front,
+
+        back: back
+
+    });
+
+
+    if (!saveStudyFlashcards()) {
+
+        studyFlashcards.pop();
+
+        if (message) {
+
+            message.textContent =
+                "The flashcard could not be saved in this browser.";
+
+        }
+
+        return;
+    }
+
+
+    frontInput.value = "";
+
+    backInput.value = "";
+
+
+    studyFlashcardIndex =
+        studyFlashcards.length - 1;
+
+    studyFlashcardFlipped = false;
+
+
+    showFlashcardsTool();
+}
+
+
+/* =========================================================
+   FLASHCARD FORM
+   ========================================================= */
+
+function clearFlashcardForm() {
+
+    const frontInput =
+        document.getElementById(
+            "flashcard-front"
+        );
+
+    const backInput =
+        document.getElementById(
+            "flashcard-back"
+        );
+
+    if (frontInput) {
+        frontInput.value = "";
+    }
+
+    if (backInput) {
+        backInput.value = "";
+    }
+}
+
+
+/* =========================================================
+   DELETE FLASHCARD
+   ========================================================= */
+
+function deleteStudyFlashcard(cardId) {
+
+    studyFlashcards =
+        studyFlashcards.filter(
+            card =>
+                card.id !== cardId
+        );
+
+    saveStudyFlashcards();
+
+
+    if (
+        studyFlashcardIndex >=
+        studyFlashcards.length
+    ) {
+
+        studyFlashcardIndex =
+            Math.max(
+                0,
+                studyFlashcards.length - 1
+            );
+
+    }
+
+
+    studyFlashcardFlipped = false;
+
+    showFlashcardsTool();
+}
+
+
+/* =========================================================
+   SHUFFLE FLASHCARDS
+   ========================================================= */
+
+function shuffleStudyFlashcards() {
+
+    for (
+        let i = studyFlashcards.length - 1;
+        i > 0;
+        i--
+    ) {
+
+        const j =
+            Math.floor(
+                Math.random() *
+                (i + 1)
+            );
+
+        [
+            studyFlashcards[i],
+            studyFlashcards[j]
+        ] = [
+            studyFlashcards[j],
+            studyFlashcards[i]
+        ];
+
+    }
+
+
+    saveStudyFlashcards();
+
+
+    studyFlashcardIndex = 0;
+
+    studyFlashcardFlipped = false;
+
+
+    showFlashcardsTool();
+}
+
+/* =========================================================
+   FLASHCARD NAVIGATION
+   ========================================================= */
+
+function flipStudyFlashcard() {
+
+    studyFlashcardFlipped =
+        !studyFlashcardFlipped;
+
+    renderFlashcardStudyArea();
+}
+
+
+function previousStudyFlashcard() {
+
+    if (!studyFlashcards.length) {
+        return;
+    }
+
+
+    studyFlashcardIndex =
+        (
+            studyFlashcardIndex -
+            1 +
+            studyFlashcards.length
+        ) %
+        studyFlashcards.length;
+
+
+    studyFlashcardFlipped = false;
+
+
+    renderFlashcardStudyArea();
+}
+
+
+function nextStudyFlashcard() {
+
+    if (!studyFlashcards.length) {
+        return;
+    }
+
+
+    studyFlashcardIndex =
+        (
+            studyFlashcardIndex +
+            1
+        ) %
+        studyFlashcards.length;
+
+
+    studyFlashcardFlipped = false;
+
+
+    renderFlashcardStudyArea();
+}
+
+
+/* =========================================================
+   FLASHCARD LIST
+   ========================================================= */
+
+function renderFlashcardList() {
+
+    const container =
+        document.getElementById(
+            "flashcard-list"
+        );
+
+    if (!container) {
+        return;
+    }
+
+
+    if (!studyFlashcards.length) {
+
+        container.innerHTML = `
+
+            <div class="study-tool-empty-state">
+
+                No flashcards yet.
+                Create your first card above.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        studyFlashcards.map(
+            (card, index) => `
+
+                <div class="flashcard-list-item">
+
+                    <div>
+
+                        <strong>
+                            Card ${index + 1}
+                        </strong>
+
+                        <p>
+                            ${escapeHTML(
+                                card.front
+                            )}
+                        </p>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="danger-tool-button"
+                        onclick="deleteStudyFlashcard('${escapeAttribute(card.id)}')"
+                    >
+                        Delete
+                    </button>
+
+                </div>
+
+            `
+        ).join("");
+}
+
+/* =========================================================
+   FLASHCARD STUDY AREA
+   ========================================================= */
+
+function renderFlashcardStudyArea() {
+
+    const container =
+        document.getElementById(
+            "flashcard-study-area"
+        );
+
+    if (!container) {
+        return;
+    }
+
+
+    if (!studyFlashcards.length) {
+
+        container.innerHTML = `
+
+            <div class="study-tool-empty-state">
+
+                Add some flashcards to start studying.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    if (
+        studyFlashcardIndex >=
+        studyFlashcards.length
+    ) {
+
+        studyFlashcardIndex = 0;
+
+    }
+
+
+    const card =
+        studyFlashcards[
+            studyFlashcardIndex
+        ];
+
+
+    const text =
+        studyFlashcardFlipped
+            ? card.back
+            : card.front;
+
+
+    const sideLabel =
+        studyFlashcardFlipped
+            ? "Answer"
+            : "Question";
+
+
+    container.innerHTML = `
+
+        <button
+            type="button"
+            class="flashcard-display"
+            onclick="flipStudyFlashcard()"
+            aria-label="Flip flashcard"
+        >
+
+            <span
+                class="flashcard-side-label"
+            >
+                ${sideLabel}
+            </span>
+
+            <span
+                class="flashcard-display-text"
+            >
+                ${escapeHTML(text)}
+            </span>
+
+            <span
+                class="flashcard-flip-hint"
+            >
+                Click to flip
+            </span>
+
+        </button>
+
+
+        <div
+            class="flashcard-study-controls"
+        >
+
+            <button
+                type="button"
+                onclick="previousStudyFlashcard()"
+            >
+                ← Previous
+            </button>
+
+            <span>
+
+                ${studyFlashcardIndex + 1}
+                /
+                ${studyFlashcards.length}
+
+            </span>
+
+            <button
+                type="button"
+                onclick="nextStudyFlashcard()"
+            >
+                Next →
+
+            </button>
+
+        </div>
+
+    `;
+}
+
+
+/* =========================================================
+   STUDY TIMER
+   ========================================================= */
+
+function showStudyTimerTool() {
+
+    setStudyToolNavigation("timer");
+
+    const container =
+        getStudyToolContent();
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = `
+
+        <div
+            class="study-tool-panel timer-tool-panel"
+        >
+
+            <div class="study-tool-header">
+
+                <div>
+
+                    <h2>
+                        Study Timer
+                    </h2>
+
+                    <p>
+                        Set a study period and break period.
+                        The timer switches modes automatically
+                        when a period ends.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="timer-settings">
+
+                <div>
+
+                    <label
+                        for="timer-study-minutes"
+                    >
+                        Study minutes
+                    </label>
+
+                    <input
+                        id="timer-study-minutes"
+                        type="number"
+                        min="1"
+                        max="180"
+                        value="${studyTimerState.studyMinutes}"
+                        onchange="updateStudyTimerSettings()"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label
+                        for="timer-break-minutes"
+                    >
+                        Break minutes
+                    </label>
+
+                    <input
+                        id="timer-break-minutes"
+                        type="number"
+                        min="1"
+                        max="60"
+                        value="${studyTimerState.breakMinutes}"
+                        onchange="updateStudyTimerSettings()"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="study-timer-display">
+
+                <p
+                    id="study-timer-mode"
+                    class="study-timer-mode"
+                >
+                    ${
+                        studyTimerState.mode === "study"
+                            ? "Study Time"
+                            : "Break Time"
+                    }
+                </p>
+
+
+                <div
+                    id="study-timer-time"
+                    class="study-timer-time"
+                >
+                    ${formatStudyTimerTime()}
+                </div>
+
+            </div>
+
+
+            <div
+                class="study-tool-actions timer-actions"
+            >
+
+                <button
+                    type="button"
+                    id="study-timer-start-button"
+                    onclick="toggleStudyTimer()"
+                >
+                    ${
+                        studyTimerState.running
+                            ? "Pause"
+                            : "Start"
+                    }
+                </button>
+
+
+                <button
+                    type="button"
+                    class="secondary-tool-button"
+                    onclick="resetStudyTimer()"
+                >
+                    Reset
+                </button>
+
+            </div>
+
+
+            <p
+                id="study-timer-status"
+                class="study-tool-message"
+            >
+                ${
+                    studyTimerState.running
+                        ? "Timer running."
+                        : "Ready to study."
+                }
+            </p>
+
+        </div>
+
+    `;
+
+
+    updateStudyTimerDisplay();
+}
+
+
+/* =========================================================
+   TIMER SETTINGS
+   ========================================================= */
+
+function getTimerSettingValue(
+    id,
+    fallback,
+    minimum,
+    maximum
+) {
+
+    const input =
+        document.getElementById(id);
+
+    if (!input) {
+        return fallback;
+    }
+
+
+    const value =
+        Number.parseInt(
+            input.value,
+            10
+        );
+
+
+    if (!Number.isFinite(value)) {
+        return fallback;
+    }
+
+
+    return Math.min(
+        maximum,
+        Math.max(
+            minimum,
+            value
+        )
+    );
+}
+
+
+function updateStudyTimerSettings() {
+
+    const studyMinutes =
+        getTimerSettingValue(
+            "timer-study-minutes",
+            studyTimerState.studyMinutes,
+            1,
+            180
+        );
+
+
+    const breakMinutes =
+        getTimerSettingValue(
+            "timer-break-minutes",
+            studyTimerState.breakMinutes,
+            1,
+            60
+        );
+
+
+    studyTimerState.studyMinutes =
+        studyMinutes;
+
+    studyTimerState.breakMinutes =
+        breakMinutes;
+
+
+    if (!studyTimerState.running) {
+
+        studyTimerState.remainingSeconds =
+            (
+                studyTimerState.mode === "study"
+                    ? studyMinutes
+                    : breakMinutes
+            ) * 60;
+
+    }
+
+
+    updateStudyTimerDisplay();
+}
+
+
+/* =========================================================
+   TIMER CONTROLS
+   ========================================================= */
+
+function toggleStudyTimer() {
+
+    if (studyTimerState.running) {
+
+        pauseStudyTimer();
+
+    } else {
+
+        startStudyTimer();
+
+    }
+}
+
+
+function startStudyTimer() {
+
+    if (studyTimerState.running) {
+        return;
+    }
+
+
+    updateStudyTimerSettings();
+
+
+    studyTimerState.running = true;
+
+
+    clearInterval(
+        studyTimerInterval
+    );
+
+
+    studyTimerInterval =
+        setInterval(
+            () => {
+
+                if (!studyTimerState.running) {
+                    return;
+                }
+
+
+                studyTimerState.remainingSeconds--;
+
+
+                if (
+                    studyTimerState.remainingSeconds <= 0
+                ) {
+
+                    switchStudyTimerMode();
+
+                }
+
+
+                updateStudyTimerDisplay();
+
+            },
+            1000
+        );
+
+
+    updateStudyTimerDisplay();
+}
+
+
+function pauseStudyTimer() {
+
+    studyTimerState.running = false;
+
+
+    clearInterval(
+        studyTimerInterval
+    );
+
+
+    studyTimerInterval = null;
+
+
+    updateStudyTimerDisplay();
+}
+
+
+function resetStudyTimer() {
+
+    studyTimerState.running = false;
+
+
+    clearInterval(
+        studyTimerInterval
+    );
+
+
+    studyTimerInterval = null;
+
+
+    studyTimerState.mode =
+        "study";
+
+
+    studyTimerState.remainingSeconds =
+        studyTimerState.studyMinutes * 60;
+
+
+    updateStudyTimerDisplay();
+}
+
+
+/* =========================================================
+   TIMER MODE SWITCH
+   ========================================================= */
+
+function switchStudyTimerMode() {
+
+    studyTimerState.mode =
+        studyTimerState.mode === "study"
+            ? "break"
+            : "study";
+
+
+    studyTimerState.remainingSeconds =
+        (
+            studyTimerState.mode === "study"
+                ? studyTimerState.studyMinutes
+                : studyTimerState.breakMinutes
+        ) * 60;
+}
+
+
+/* =========================================================
+   TIMER FORMATTING
+   ========================================================= */
+
+function formatStudyTimerTime() {
+
+    const totalSeconds =
+        Math.max(
+            0,
+            studyTimerState.remainingSeconds
+        );
+
+
+    const minutes =
+        Math.floor(
+            totalSeconds / 60
+        );
+
+
+    const seconds =
+        totalSeconds % 60;
+
+
+    return (
+        String(minutes).padStart(2, "0") +
+        ":" +
+        String(seconds).padStart(2, "0")
+    );
+}
+
+
+/* =========================================================
+   TIMER DISPLAY
+   ========================================================= */
+
+function updateStudyTimerDisplay() {
+
+    const timeElement =
+        document.getElementById(
+            "study-timer-time"
+        );
+
+    const modeElement =
+        document.getElementById(
+            "study-timer-mode"
+        );
+
+    const button =
+        document.getElementById(
+            "study-timer-start-button"
+        );
+
+    const status =
+        document.getElementById(
+            "study-timer-status"
+        );
+
+
+    if (timeElement) {
+
+        timeElement.textContent =
+            formatStudyTimerTime();
+
+    }
+
+
+    if (modeElement) {
+
+        modeElement.textContent =
+            studyTimerState.mode === "study"
+                ? "Study Time"
+                : "Break Time";
+
+
+        modeElement.classList.toggle(
+            "break-mode",
+            studyTimerState.mode === "break"
+        );
+
+    }
+
+
+    if (button) {
+
+        button.textContent =
+            studyTimerState.running
+                ? "Pause"
+                : "Start";
+
+    }
+
+
+    if (status) {
+
+        status.textContent =
+            studyTimerState.running
+                ? "Timer running."
+                : "Timer paused or ready.";
+
+    }
+}
 
 /* =========================================================
    SCHEDULING

@@ -1737,3 +1737,803 @@ hr {
         top: 3px;
     }
 }
+/* =========================================================
+   STUDY TOOLS
+   ========================================================= */
+
+.study-tools-navigation {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin: 25px auto 20px;
+
+    padding-bottom: 15px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    max-width: 1100px;
+}
+
+
+.study-tool-nav-button {
+    padding: 11px 18px;
+}
+
+
+.study-tool-nav-button.active {
+    background-color: var(--wood);
+
+    color: var(--white);
+}
+
+
+.study-tool-nav-button.active:hover {
+    background-color: var(--wood-light);
+
+    color: var(--white);
+}
+
+
+#study-tools-content {
+    width: 100%;
+
+    max-width: 1100px;
+
+    margin: 0 auto 40px;
+
+    min-width: 0;
+}
+
+
+.study-tool-panel {
+    background-color: var(--cream-light);
+
+    border:
+        1px solid var(--border);
+
+    border-left:
+        5px solid var(--sage);
+
+    border-radius: 12px;
+
+    padding: 24px;
+
+    margin-bottom: 20px;
+
+    box-sizing: border-box;
+
+    box-shadow: var(--shadow);
+}
+
+
+.study-tool-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 20px;
+}
+
+
+.study-tool-header h2 {
+    margin: 0 0 6px;
+
+    color: var(--forest);
+}
+
+
+.study-tool-header p {
+    margin: 0;
+
+    color: var(--text-muted);
+
+    line-height: 1.45;
+}
+
+
+.study-tool-description,
+.study-tool-hint {
+    margin: 5px 0 15px;
+
+    color: var(--text-muted);
+
+    line-height: 1.45;
+}
+
+
+.study-tool-actions {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-top: 15px;
+}
+
+
+.secondary-tool-button {
+    background-color: var(--wood);
+}
+
+
+.secondary-tool-button:hover {
+    background-color: var(--wood-light);
+
+    color: var(--white);
+}
+
+
+.danger-tool-button {
+    background-color: var(--wood-dark);
+}
+
+
+.danger-tool-button:hover {
+    background-color: var(--wood);
+
+    color: var(--white);
+}
+
+
+.study-tool-message {
+    min-height: 1.2em;
+
+    margin: 10px 0 0;
+
+    color: var(--sage-dark);
+
+    font-weight: bold;
+}
+
+
+.study-tool-empty-state {
+    padding: 25px;
+
+    text-align: center;
+
+    color: var(--text-muted);
+
+    background-color: #f3eee5;
+
+    border:
+        1px dashed var(--border);
+
+    border-radius: 8px;
+}
+
+
+/* =========================================================
+   NOTE TAKING
+   ========================================================= */
+
+.note-method-selector {
+    margin-bottom: 10px;
+}
+
+
+.study-note-large-textarea {
+    min-height: 300px;
+
+    resize: vertical;
+
+    line-height: 1.5;
+}
+
+
+.cornell-notes-layout {
+    display: grid;
+
+    grid-template-columns:
+        minmax(180px, 0.8fr)
+        minmax(300px, 2fr);
+
+    gap: 0;
+
+    margin-top: 10px;
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 8px;
+
+    overflow: hidden;
+}
+
+
+.cornell-main-ideas,
+.cornell-details,
+.cornell-summary {
+    padding: 15px;
+
+    box-sizing: border-box;
+}
+
+
+.cornell-main-ideas {
+    background-color: #f3eee5;
+
+    border-right:
+        1px solid var(--border);
+}
+
+
+.cornell-details {
+    background-color: var(--cream-light);
+}
+
+
+.cornell-summary {
+    grid-column: 1 / -1;
+
+    background-color: var(--sage-lighter);
+
+    border-top:
+        1px solid var(--border);
+}
+
+
+.cornell-notes-layout textarea {
+    min-height: 220px;
+
+    margin-bottom: 0;
+
+    resize: vertical;
+
+    line-height: 1.5;
+}
+
+
+.cornell-summary textarea {
+    min-height: 130px;
+}
+
+
+.charting-table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+
+    margin: 10px 0 12px;
+}
+
+
+.study-chart-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    table-layout: fixed;
+}
+
+
+.study-chart-table th,
+.study-chart-table td {
+    border:
+        1px solid var(--border);
+
+    padding: 8px;
+
+    vertical-align: top;
+}
+
+
+.study-chart-table th {
+    background-color: var(--sage-light);
+
+    color: var(--forest);
+
+    text-align: left;
+}
+
+
+.study-chart-table td {
+    background-color: var(--cream-light);
+}
+
+
+.study-chart-table textarea {
+    min-height: 100px;
+
+    width: 100%;
+
+    margin: 0;
+
+    resize: vertical;
+
+    box-sizing: border-box;
+}
+
+
+.saved-notes-panel {
+    border-left-color: var(--wood);
+}
+
+
+.saved-note-card {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 15px;
+
+    margin-bottom: 10px;
+
+    background-color: #f8f5ed;
+
+    border:
+        1px solid var(--border);
+
+    border-left:
+        4px solid var(--sage);
+
+    border-radius: 8px;
+
+    box-sizing: border-box;
+}
+
+
+.saved-note-card:last-child {
+    margin-bottom: 0;
+}
+
+
+.saved-note-card h3 {
+    margin: 0 0 7px;
+
+    color: var(--forest);
+}
+
+
+.saved-note-card p {
+    margin: 7px 0 0;
+
+    color: var(--text-muted);
+
+    font-size: 0.9rem;
+}
+
+
+.study-note-method-badge {
+    display: inline-block;
+
+    padding: 4px 9px;
+
+    border-radius: 20px;
+
+    background-color: var(--sage-light);
+
+    color: var(--sage-dark);
+
+    font-size: 0.82rem;
+
+    font-weight: bold;
+}
+
+
+.saved-note-actions {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    flex-shrink: 0;
+}
+
+
+.saved-note-actions button {
+    padding: 8px 12px;
+
+    font-size: 0.9rem;
+}
+
+
+/* =========================================================
+   FLASHCARDS
+   ========================================================= */
+
+.flashcard-create-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 18px;
+}
+
+
+.flashcard-create-grid textarea {
+    min-height: 140px;
+
+    resize: vertical;
+
+    line-height: 1.5;
+}
+
+
+.flashcard-list-header {
+    align-items: center;
+}
+
+
+.flashcard-list-item {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 13px 15px;
+
+    margin-bottom: 8px;
+
+    background-color: #f8f5ed;
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 8px;
+}
+
+
+.flashcard-list-item:last-child {
+    margin-bottom: 0;
+}
+
+
+.flashcard-list-item strong {
+    color: var(--forest);
+}
+
+
+.flashcard-list-item p {
+    margin: 5px 0 0;
+
+    overflow-wrap: anywhere;
+
+    word-break: break-word;
+}
+
+
+.flashcard-list-item button {
+    flex-shrink: 0;
+
+    padding: 7px 11px;
+
+    font-size: 0.85rem;
+}
+
+
+.flashcard-study-panel {
+    border-left-color: var(--wood);
+}
+
+
+.flashcard-display {
+    width: 100%;
+
+    min-height: 300px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 15px;
+
+    padding: 35px;
+
+    box-sizing: border-box;
+
+    background-color: var(--sage-lighter);
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 12px;
+
+    color: var(--forest);
+
+    box-shadow: none;
+}
+
+
+.flashcard-display:hover {
+    background-color: var(--sage-light);
+
+    color: var(--forest);
+
+    transform: none;
+
+    box-shadow: var(--shadow);
+}
+
+
+.flashcard-side-label {
+    font-size: 0.85rem;
+
+    font-weight: bold;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+
+    color: var(--sage-dark);
+}
+
+
+.flashcard-display-text {
+    max-width: 850px;
+
+    font-size: 1.35rem;
+
+    line-height: 1.55;
+
+    overflow-wrap: anywhere;
+
+    word-break: break-word;
+}
+
+
+.flashcard-flip-hint {
+    color: var(--text-muted);
+
+    font-size: 0.9rem;
+}
+
+
+.flashcard-study-controls {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 20px;
+
+    margin-top: 15px;
+}
+
+
+.flashcard-study-controls span {
+    min-width: 55px;
+
+    text-align: center;
+
+    color: var(--text-muted);
+
+    font-weight: bold;
+}
+
+
+/* =========================================================
+   STUDY TIMER
+   ========================================================= */
+
+.timer-tool-panel {
+    max-width: 850px;
+
+    margin-left: auto;
+
+    margin-right: auto;
+}
+
+
+.timer-settings {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 18px;
+
+    max-width: 650px;
+
+    margin: 0 auto;
+}
+
+
+.study-timer-display {
+    margin: 30px auto 20px;
+
+    padding: 30px 20px;
+
+    text-align: center;
+
+    background-color: #f3eee5;
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 12px;
+}
+
+
+.study-timer-mode {
+    margin: 0 0 8px;
+
+    color: var(--sage-dark);
+
+    font-size: 1.1rem;
+
+    font-weight: bold;
+}
+
+
+.study-timer-mode.break-mode {
+    color: var(--wood);
+}
+
+
+.study-timer-time {
+    color: var(--forest);
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    font-size:
+        clamp(
+            4rem,
+            12vw,
+            7rem
+        );
+
+    font-weight: bold;
+
+    letter-spacing: 3px;
+
+    line-height: 1;
+}
+
+
+.timer-actions {
+    justify-content: center;
+}
+
+
+/* =========================================================
+   STUDY TOOLS — PHONE SIZING
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .study-tools-navigation {
+        margin-left: 2%;
+
+        margin-right: 2%;
+    }
+
+
+    #study-tools-content {
+        padding-left: 2%;
+
+        padding-right: 2%;
+
+        box-sizing: border-box;
+    }
+
+
+    .study-tool-panel {
+        padding: 18px;
+    }
+
+
+    .study-tool-header {
+        flex-direction: column;
+
+        gap: 10px;
+    }
+
+
+    .cornell-notes-layout {
+        grid-template-columns: 1fr;
+    }
+
+
+    .cornell-main-ideas {
+        border-right: none;
+
+        border-bottom:
+            1px solid var(--border);
+    }
+
+
+    .cornell-summary {
+        grid-column: auto;
+    }
+
+
+    .cornell-notes-layout textarea,
+    .cornell-summary textarea {
+        min-height: 160px;
+    }
+
+
+    .flashcard-create-grid,
+    .timer-settings {
+        grid-template-columns: 1fr;
+    }
+
+
+    .saved-note-card,
+    .flashcard-list-item {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .saved-note-actions {
+        width: 100%;
+    }
+
+
+    .saved-note-actions button {
+        flex: 1;
+    }
+
+
+    .flashcard-study-controls {
+        gap: 10px;
+    }
+
+
+    .flashcard-study-controls button {
+        padding: 9px 11px;
+    }
+}
+
+
+@media (max-width: 480px) {
+
+    .study-tools-navigation {
+        flex-direction: column;
+    }
+
+
+    .study-tool-nav-button {
+        width: 100%;
+    }
+
+
+    .flashcard-display {
+        min-height: 240px;
+
+        padding: 25px 18px;
+    }
+
+
+    .flashcard-display-text {
+        font-size: 1.1rem;
+    }
+
+
+    .study-timer-time {
+        font-size: 3.5rem;
+    }
+}
