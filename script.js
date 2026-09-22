@@ -2420,120 +2420,317 @@ async function loadPosts() {
             "posts-list"
         );
 
+    if (!postsList) {
+        console.error("Posts list container not found.");
+        return;
+    }
 
-    const {
-        data: posts,
-        error
-    } =
-        await supabaseClient
-            .from("posts")
-            .select(`
-                id,
-                title,
-                description,
-                link,
-                category,
-                created_at,
-                profiles (
-                    username
+    postsList.innerHTML = `
+        <p>
+            Loading posts...
+        </p>
+    `;
+
+    try {
+
+        const {
+            data: posts,
+            error
+        } =
+            await supabaseClient
+                .from("posts")
+                .select(`
+                    id,
+                    title,
+                    description,
+                    link,
+                    category,
+                    created_at,
+                    profiles (
+                        username
+                    )
+                `)
+                .eq(
+                    "status",
+                    "approved"
                 )
-            `)
-            .eq(
-                "status",
-                "approved"
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+
+        if (error) {
+
+            console.error(
+                "Error loading posts:",
+                error
             );
 
+            postsList.innerHTML = `
+                <p>
+                    Error loading posts:
+                    ${escapeHTML(error.message)}
+                </p>
+            `;
 
-    if (error) {
+            return;
+        }
+
+
+
+        if (
+            !posts ||
+            posts.length === 0
+        ) {
+
+            postsList.innerHTML = `
+                <p>
+                    No approved posts yet.
+                </p>
+            `;
+
+            return;
+        }
+
+
 
         postsList.innerHTML =
-            `<p>
-                Error loading posts:
-                ${escapeHTML(error.message)}
-            </p>`;
+            posts.map(
+                post => {
 
-        return;
+                    const description =
+                        String(
+                            post.description ?? ""
+                        );
+
+                    const descriptionLimit = 1000;
+
+                    const isLong =
+                        description.length >
+                        descriptionLimit;
+
+                    const shortDescription =
+                        isLong
+                            ? description.substring(
+                                0,
+                                descriptionLimit
+                            ) + "..."
+                            : description;
+
+
+
+                    return `
+
+                        <article class="post">
+
+                            <h2>
+                                ${escapeHTML(
+                                    post.title
+                                )}
+                            </h2>
+
+
+
+                            <p class="post-category">
+                                ${escapeHTML(
+                                    post.category
+                                )}
+                            </p>
+
+
+
+                            <div
+                                class="post-description"
+                                id="post-description-${post.id}"
+                            >
+
+                                <p>
+                                    ${escapeHTML(
+                                        shortDescription
+                                    )}
+                                </p>
+
+                            </div>
+
+
+
+                            ${
+                                isLong
+                                    ? `
+                                        <button
+                                            type="button"
+                                            class="post-show-more"
+                                            onclick="
+                                                togglePostDescription(
+                                                    '${post.id}'
+                                                )
+                                            "
+                                            id="post-toggle-${post.id}"
+                                        >
+                                            Show More
+                                        </button>
+                                    `
+                                    : ""
+                            }
+
+
+
+                            ${
+                                post.link
+                                    ? `
+                                        <a
+                                            href="${escapeAttribute(
+                                                post.link
+                                            )}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            View Resource
+                                        </a>
+                                    `
+                                    : ""
+                            }
+
+
+
+                            <p class="post-author">
+                                Posted by:
+                                ${escapeHTML(
+                                    post.profiles?.username ||
+                                    "Unknown"
+                                )}
+                            </p>
+
+
+
+                            <p class="post-date">
+                                ${new Date(
+                                    post.created_at
+                                ).toLocaleDateString()}
+                            </p>
+
+                        </article>
+
+                    `;
+                }
+            ).join("");
+
+
+
+        // Store the full descriptions so that Show More
+        // can retrieve them without putting enormous
+        // amounts of text directly into the HTML.
+        window.postDescriptions = {};
+
+        posts.forEach(
+            post => {
+
+                window.postDescriptions[
+                    post.id
+                ] =
+                    String(
+                        post.description ?? ""
+                    );
+            }
+        );
+
+
+
+    } catch (error) {
+
+        console.error(
+            "Unexpected error loading posts:",
+            error
+        );
+
+        postsList.innerHTML = `
+            <p>
+                An unexpected error occurred while
+                loading posts.
+            </p>
+        `;
     }
+}
+function togglePostDescription(postId) {
 
+    const descriptionElement =
+        document.getElementById(
+            `post-description-${postId}`
+        );
+
+    const toggleButton =
+        document.getElementById(
+            `post-toggle-${postId}`
+        );
 
     if (
-        !posts ||
-        posts.length === 0
+        !descriptionElement ||
+        !toggleButton
     ) {
-
-        postsList.innerHTML =
-            `<p>
-                No approved posts yet.
-            </p>`;
-
         return;
     }
 
 
-    postsList.innerHTML =
-        posts.map(
-            post => `
 
-                <article class="post">
+    const fullDescription =
+        window.postDescriptions?.[postId];
 
-                    <h2>
-                        ${escapeHTML(
-                            post.title
-                        )}
-                    </h2>
+    if (
+        typeof fullDescription !== "string"
+    ) {
+        return;
+    }
 
-                    <p class="post-category">
-                        ${escapeHTML(
-                            post.category
-                        )}
-                    </p>
 
-                    <p class="post-description">
-                        ${escapeHTML(
-                            post.description
-                        )}
-                    </p>
 
-                    ${
-                        post.link
-                            ? `
-                                <a
-                                    href="${escapeAttribute(
-                                        post.link
-                                    )}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    View Resource
-                                </a>
-                            `
-                            : ""
-                    }
+    const descriptionLimit = 1000;
 
-                    <p class="post-author">
-                        Posted by:
-                        ${escapeHTML(
-                            post.profiles?.username ||
-                            "Unknown"
-                        )}
-                    </p>
 
-                    <p class="post-date">
-                        ${new Date(
-                            post.created_at
-                        ).toLocaleDateString()}
-                    </p>
 
-                </article>
+    const currentlyExpanded =
+        toggleButton.dataset.expanded === "true";
 
-            `
-        ).join("");
+
+
+    if (currentlyExpanded) {
+
+        descriptionElement.innerHTML = `
+            <p>
+                ${escapeHTML(
+                    fullDescription.substring(
+                        0,
+                        descriptionLimit
+                    ) + "..."
+                )}
+            </p>
+        `;
+
+        toggleButton.textContent =
+            "Show More";
+
+        toggleButton.dataset.expanded =
+            "false";
+
+    } else {
+
+        descriptionElement.innerHTML = `
+            <p>
+                ${escapeHTML(
+                    fullDescription
+                )}
+            </p>
+        `;
+
+        toggleButton.textContent =
+            "Show Less";
+
+        toggleButton.dataset.expanded =
+            "true";
+    }
 }
 
 
