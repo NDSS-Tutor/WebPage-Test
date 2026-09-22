@@ -84,7 +84,7 @@ body {
     padding: 0;
     gap: 14px;
 
-    background-color: var(--wood-dark);
+    background-color: var(--wood-light);
 
     overflow: hidden;
     overflow-y: auto;
@@ -131,7 +131,7 @@ body {
     border: none;
     border-radius: 10px;
 
-    background-color: transparent;
+    background-color: color(var(--wood));
 
     cursor: pointer;
 
