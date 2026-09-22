@@ -597,6 +597,7 @@ async function loadCalendar() {
                 start_time,
                 end_time,
                 status,
+                location,
                 topics (
                     name
                 )
@@ -769,14 +770,17 @@ function renderCalendar(
                     );
 
 
+                const location =
+                    session.location || "Location not specified";
+
                 eventElement.textContent =
-                    `${start.toLocaleTimeString(
-                        [],
-                        {
-                            hour: "numeric",
-                            minute: "2-digit"
-                        }
-                    )} ${event.title}`;
+                    `${start.toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit"
+                    })} ${topicName} Tutoring`;
+
+                eventElement.title =
+                    `Location: ${location}`;
 
 
                 dayElement.appendChild(
@@ -3867,24 +3871,14 @@ async function showTutorStudents() {
 async function loadTutorRequests() {
 
     const container =
-        document.getElementById(
-            "tutor-requests"
-        );
-
-
-    if (!container) {
-        return;
-    }
+        document.getElementById("tutor-requests");
 
 
     const {
         data: requests,
         error
-    } =
-        await supabaseClient
-            .rpc(
-                "get_tutoring_requests"
-            );
+    } = await supabaseClient
+        .rpc("get_tutoring_requests");
 
 
     if (error) {
@@ -3892,9 +3886,7 @@ async function loadTutorRequests() {
         container.innerHTML = `
             <p>
                 Error loading tutoring requests:
-                ${escapeHTML(
-                    error.message
-                )}
+                ${escapeHTML(error.message)}
             </p>
         `;
 
@@ -3909,9 +3901,7 @@ async function loadTutorRequests() {
         );
 
 
-    if (
-        openRequests.length === 0
-    ) {
+    if (openRequests.length === 0) {
 
         container.innerHTML = `
             <p>
@@ -3924,87 +3914,133 @@ async function loadTutorRequests() {
     }
 
 
-    container.innerHTML =
+    /*
+     * Get the requested locations for these requests.
+     */
+    const requestIds =
         openRequests.map(
-            request => `
-
-                <div class="tutoring-request">
-
-                    <h2>
-                        ${escapeHTML(
-                            request.topic_name
-                        )}
-                    </h2>
-
-                    <p>
-                        <strong>
-                            Student:
-                        </strong>
-
-                        ${escapeHTML(
-                            request.student_username
-                        )}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Request:
-                        </strong>
-                    </p>
-
-                    <p>
-                        ${escapeHTML(
-                            request.description
-                        )}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Proposed Time:
-                        </strong>
-
-                        ${new Date(
-                            request.proposed_start
-                        ).toLocaleString()}
-
-                        -
-
-                        ${new Date(
-                            request.proposed_end
-                        ).toLocaleTimeString()}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Status:
-                        </strong>
-
-                        ${escapeHTML(
-                            request.status
-                        )}
-                    </p>
+            request => Number(request.id)
+        );
 
 
-                    <button
-                        onclick="
-                            acceptTutoringRequest(
-                                '${request.id}'
-                            )
-                        "
-                    >
-                        Accept
-                    </button>
+    const {
+        data: locations,
+        error: locationError
+    } = await supabaseClient
+        .from("tutoring_request_locations")
+        .select(`
+            request_id,
+            location
+        `)
+        .in(
+            "request_id",
+            requestIds
+        );
 
-                </div>
 
-            `
-        ).join("");
+    if (locationError) {
+
+        console.error(
+            "Location loading error:",
+            locationError
+        );
+    }
+
+
+    const locationMap =
+        new Map(
+            (locations || []).map(
+                row => [
+                    Number(row.request_id),
+                    row.location
+                ]
+            )
+        );
+
+
+    container.innerHTML =
+        openRequests
+            .map(request => {
+
+                const location =
+                    locationMap.get(
+                        Number(request.id)
+                    ) ||
+                    "No location provided";
+
+
+                return `
+
+                    <div class="tutoring-request">
+
+                        <h2>
+                            ${escapeHTML(
+                                request.topic_name
+                            )}
+                        </h2>
+
+
+                        <p>
+                            <strong>Student:</strong>
+                            ${escapeHTML(
+                                request.student_username
+                            )}
+                        </p>
+
+
+                        <p>
+                            <strong>Request:</strong>
+                        </p>
+
+                        <p>
+                            ${escapeHTML(
+                                request.description
+                            )}
+                        </p>
+
+
+                        <p>
+                            <strong>Preferred Location:</strong>
+                            ${escapeHTML(location)}
+                        </p>
+
+
+                        <p>
+                            <strong>Proposed Time:</strong>
+                            ${new Date(
+                                request.proposed_start
+                            ).toLocaleString()}
+                            -
+                            ${new Date(
+                                request.proposed_end
+                            ).toLocaleTimeString()}
+                        </p>
+
+
+                        <p>
+                            <strong>Status:</strong>
+                            ${escapeHTML(
+                                request.status
+                            )}
+                        </p>
+
+
+                        <button
+                            onclick="acceptTutoringRequest('${request.id}')"
+                        >
+                            Accept
+                        </button>
+
+                    </div>
+
+                `;
+
+            })
+            .join("");
 }
 
 
-async function acceptTutoringRequest(
-    requestId
-) {
+async function acceptTutoringRequest(requestId) {
 
     const confirmed =
         confirm(
@@ -4017,17 +4053,18 @@ async function acceptTutoringRequest(
     }
 
 
+    /*
+     * Accept the request using your existing RPC.
+     */
     const {
         error
-    } =
-        await supabaseClient
-            .rpc(
-                "accept_tutoring_request",
-                {
-                    request_id:
-                        Number(requestId)
-                }
-            );
+    } = await supabaseClient
+        .rpc(
+            "accept_tutoring_request",
+            {
+                request_id: Number(requestId)
+            }
+        );
 
 
     if (error) {
@@ -4041,8 +4078,40 @@ async function acceptTutoringRequest(
     }
 
 
+    /*
+     * Copy the requested location from the request
+     * onto the newly-created tutoring session.
+     */
+    const {
+        error: locationError
+    } = await supabaseClient
+        .rpc(
+            "copy_tutoring_request_location",
+            {
+                p_request_id: Number(requestId)
+            }
+        );
+
+
+    if (locationError) {
+
+        console.error(
+            "Location could not be attached to session:",
+            locationError
+        );
+
+        alert(
+            "The tutoring session was accepted, but its location could not be attached. Please check the request."
+        );
+
+        await loadTutorRequests();
+
+        return;
+    }
+
+
     alert(
-        "Tutoring session accepted! It has been added to your calendar and the student's calendar."
+        "Tutoring session accepted! It has been added to your calendar with the requested location."
     );
 
 
@@ -4229,15 +4298,10 @@ async function dropTutoringSession(
 async function showTutoringPage() {
 
     const schedulingContent =
-        document.getElementById(
-            "scheduling-content"
-        );
-
+        document.getElementById("scheduling-content");
 
     if (!schedulingContent) {
-
         showSchedulingPage();
-
         return;
     }
 
@@ -4245,42 +4309,29 @@ async function showTutoringPage() {
     const {
         data: { user },
         error: userError
-    } =
-        await supabaseClient.auth.getUser();
+    } = await supabaseClient.auth.getUser();
 
 
-    if (
-        userError ||
-        !user
-    ) {
+    if (userError || !user) {
 
         schedulingContent.innerHTML = `
-
             <div class="account-container">
 
-                <h2>
-                    Request Tutoring
-                </h2>
+                <h2>Request Tutoring</h2>
 
                 <p>
-                    You must be logged in
-                    to request tutoring.
+                    You must be logged in to request tutoring.
                 </p>
 
-                <button
-                    onclick="showAccountPage()"
-                >
+                <button onclick="showAccountPage()">
                     Go to Account
                 </button>
 
-                <button
-                    onclick="showCalendar()"
-                >
+                <button onclick="showCalendar()">
                     Back to Calendar
                 </button>
 
             </div>
-
         `;
 
         return;
@@ -4290,46 +4341,30 @@ async function showTutoringPage() {
     const {
         data: topics,
         error: topicError
-    } =
-        await supabaseClient
-            .from("topics")
-            .select(
-                "id, name"
-            )
-            .eq(
-                "active",
-                true
-            )
-            .order(
-                "name"
-            );
+    } = await supabaseClient
+        .from("topics")
+        .select("id, name")
+        .eq("active", true)
+        .order("name");
 
 
     if (topicError) {
 
         schedulingContent.innerHTML = `
-
             <div class="account-container">
 
-                <h2>
-                    Request Tutoring
-                </h2>
+                <h2>Request Tutoring</h2>
 
                 <p>
                     Error loading tutoring topics:
-                    ${escapeHTML(
-                        topicError.message
-                    )}
+                    ${escapeHTML(topicError.message)}
                 </p>
 
-                <button
-                    onclick="showCalendar()"
-                >
+                <button onclick="showCalendar()">
                     Back to Calendar
                 </button>
 
             </div>
-
         `;
 
         return;
@@ -4340,14 +4375,12 @@ async function showTutoringPage() {
 
         <div class="account-container">
 
-            <h2>
-                Request Tutoring
-            </h2>
-
+            <h2>Request Tutoring</h2>
 
             <p>
-                Select the subject you need help with
-                and explain what you would like help on.
+                Select the subject you need help with,
+                explain what you need help on, and
+                provide your preferred tutoring location.
             </p>
 
 
@@ -4355,28 +4388,17 @@ async function showTutoringPage() {
                 Subject
             </label>
 
-
-            <select
-                id="tutoring-topic"
-            >
+            <select id="tutoring-topic">
 
                 <option value="">
                     Select a subject
                 </option>
 
-                ${
-                    topics.map(
-                        topic => `
-                            <option
-                                value="${topic.id}"
-                            >
-                                ${escapeHTML(
-                                    topic.name
-                                )}
-                            </option>
-                        `
-                    ).join("")
-                }
+                ${topics.map(topic => `
+                    <option value="${topic.id}">
+                        ${escapeHTML(topic.name)}
+                    </option>
+                `).join("")}
 
             </select>
 
@@ -4385,17 +4407,27 @@ async function showTutoringPage() {
                 What do you need help with?
             </label>
 
-
             <textarea
                 id="tutoring-description"
                 placeholder="Explain what you need help with..."
             ></textarea>
 
 
+            <label for="tutoring-location">
+                Preferred Location
+            </label>
+
+            <input
+                type="text"
+                id="tutoring-location"
+                placeholder="Example: School library, Room 204, Online..."
+                maxlength="200"
+            >
+
+
             <label for="tutoring-date">
                 Preferred Date
             </label>
-
 
             <input
                 type="date"
@@ -4407,7 +4439,6 @@ async function showTutoringPage() {
                 Preferred Start Time
             </label>
 
-
             <input
                 type="time"
                 id="tutoring-start"
@@ -4418,7 +4449,6 @@ async function showTutoringPage() {
                 Preferred End Time
             </label>
 
-
             <input
                 type="time"
                 id="tutoring-end"
@@ -4427,67 +4457,18 @@ async function showTutoringPage() {
 
             <br><br>
 
-
-            <button
-                onclick="submitTutoringRequest()"
-            >
+            <button onclick="submitTutoringRequest()">
                 Submit Request
             </button>
 
-
-            <button
-                onclick="showCalendar()"
-            >
+            <button onclick="showCalendar()">
                 Cancel
             </button>
-
 
             <p id="tutoring-message"></p>
 
         </div>
-
     `;
-
-
-    const dateInput =
-        document.getElementById(
-            "tutoring-date"
-        );
-
-
-    if (dateInput) {
-
-        const today =
-            new Date();
-
-
-        const minDate =
-            today
-                .toISOString()
-                .split("T")[0];
-
-
-        const maxDateObj =
-            new Date(today);
-
-
-        maxDateObj.setMonth(
-            maxDateObj.getMonth() + 2
-        );
-
-
-        const maxDate =
-            maxDateObj
-                .toISOString()
-                .split("T")[0];
-
-
-        dateInput.min =
-            minDate;
-
-        dateInput.max =
-            maxDate;
-    }
 }
 
 
@@ -4495,77 +4476,55 @@ async function submitTutoringRequest() {
 
     const topicId =
         document
-            .getElementById(
-                "tutoring-topic"
-            )
+            .getElementById("tutoring-topic")
             .value;
-
 
     const description =
         document
-            .getElementById(
-                "tutoring-description"
-            )
+            .getElementById("tutoring-description")
             .value
             .trim();
 
+    const location =
+        document
+            .getElementById("tutoring-location")
+            .value
+            .trim();
 
     const date =
         document
-            .getElementById(
-                "tutoring-date"
-            )
+            .getElementById("tutoring-date")
             .value;
-
 
     const startTime =
         document
-            .getElementById(
-                "tutoring-start"
-            )
+            .getElementById("tutoring-start")
             .value;
-
 
     const endTime =
         document
-            .getElementById(
-                "tutoring-end"
-            )
+            .getElementById("tutoring-end")
             .value;
 
-
     const message =
-        document.getElementById(
-            "tutoring-message"
-        );
+        document.getElementById("tutoring-message");
 
 
     const selectedDate =
-        new Date(
-            `${date}T00:00:00`
-        );
-
+        new Date(`${date}T00:00:00`);
 
     const today =
         new Date();
 
-
-    today.setHours(
-        0,
-        0,
-        0,
-        0
-    );
+    today.setHours(0, 0, 0, 0);
 
 
     const maxDate =
         new Date(today);
 
-
     maxDate.setMonth(
         maxDate.getMonth() + 2
     );
-
 
     maxDate.setHours(
         0,
@@ -4576,6 +4535,7 @@ async function submitTutoringRequest() {
 
 
     if (
+        !date ||
         selectedDate < today ||
         selectedDate > maxDate
     ) {
@@ -4605,8 +4565,16 @@ async function submitTutoringRequest() {
     }
 
 
+    if (!location) {
+
+        message.textContent =
+            "Please enter a preferred tutoring location.";
+
+        return;
+    }
+
+
     if (
-        !date ||
         !startTime ||
         !endTime
     ) {
@@ -4620,7 +4588,6 @@ async function submitTutoringRequest() {
 
     const proposedStart =
         `${date}T${startTime}:00+04:00`;
-
 
     const proposedEnd =
         `${date}T${endTime}:00+04:00`;
@@ -4645,14 +4612,10 @@ async function submitTutoringRequest() {
     const {
         data: { user },
         error: userError
-    } =
-        await supabaseClient.auth.getUser();
+    } = await supabaseClient.auth.getUser();
 
 
-    if (
-        userError ||
-        !user
-    ) {
+    if (userError || !user) {
 
         message.textContent =
             "You must be logged in.";
@@ -4661,32 +4624,58 @@ async function submitTutoringRequest() {
     }
 
 
+    /*
+     * First create the tutoring request using
+     * your existing RPC.
+     */
     const {
-        error
-    } =
-        await supabaseClient
-            .rpc(
-                "create_tutoring_request",
-                {
-                    p_topic_id:
-                        Number(topicId),
-                    p_description:
-                        description,
-                    p_date:
-                        date,
-                    p_start_time:
-                        startTime,
-                    p_end_time:
-                        endTime
-                }
-            );
+        data: requestId,
+        error: requestError
+    } = await supabaseClient
+        .rpc(
+            "create_tutoring_request",
+            {
+                p_topic_id: Number(topicId),
+                p_description: description,
+                p_date: date,
+                p_start_time: startTime,
+                p_end_time: endTime
+            }
+        );
 
 
-    if (error) {
+    if (requestError) {
 
         message.textContent =
             "Error: " +
-            error.message;
+            requestError.message;
+
+        return;
+    }
+
+
+    /*
+     * Save the requested location separately.
+     */
+    const {
+        error: locationError
+    } = await supabaseClient
+        .from("tutoring_request_locations")
+        .insert({
+            request_id: Number(requestId),
+            location: location
+        });
+
+
+    if (locationError) {
+
+        /*
+         * The tutoring request exists, but its location
+         * could not be saved.
+         */
+        message.textContent =
+            "The tutoring request was created, but the location could not be saved: " +
+            locationError.message;
 
         return;
     }
@@ -4696,12 +4685,11 @@ async function submitTutoringRequest() {
         "Your tutoring request has been submitted!";
 
 
-    setTimeout(
-        () => {
-            showTutoringPage();
-        },
-        1500
-    );
+    setTimeout(() => {
+
+        showTutoringPage();
+
+    }, 1500);
 }
 
 

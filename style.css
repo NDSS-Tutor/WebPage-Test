@@ -1443,7 +1443,73 @@ textarea {
 
     color: var(--forest);
 }
+/* =========================================================
+   TUTORING LOCATION
+   ========================================================= */
 
+#tutoring-location {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TUTORING CALENDAR EVENTS
+   ========================================================= */
+
+.tutoring-event {
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.tutoring-event:hover {
+    background-color: var(--sage-lighter);
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   LOCATION DISPLAY
+   ========================================================= */
+
+.tutoring-location {
+    display: block;
+
+    margin-top: 6px;
+    padding: 8px 10px;
+
+    background-color: var(--sage-lighter);
+
+    border-left: 3px solid var(--sage-dark);
+    border-radius: 5px;
+
+    color: var(--forest);
+    font-size: 0.95rem;
+}
+
+
+/* =========================================================
+   TUTORING REQUEST LOCATION
+   ========================================================= */
+
+.tutoring-request .request-location {
+    margin: 10px 0;
+    padding: 10px 12px;
+
+    background-color: var(--sage-lighter);
+
+    border-left: 4px solid var(--sage);
+    border-radius: 7px;
+
+    color: var(--forest);
+}
+
+.tutoring-request .request-location strong {
+    color: var(--forest);
+}
 
 /* =========================================================
    EMPTY STATES
