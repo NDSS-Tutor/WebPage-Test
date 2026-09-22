@@ -8,12 +8,13 @@
 
     --sage: #71866b;
     --sage-light: #dce5d7;
+    --sage-lighter: #e8efe4;
     --sage-dark: #52664e;
 
     --forest: #304535;
 
     --wood: #654936;
-    --wood-dark: #493326;
+    --wood-dark: #5c4637;
     --wood-light: #8a684d;
 
     --brown-light: #d8c8b7;
@@ -100,7 +101,7 @@ body {
 
     z-index: 1000;
 
-    box-shadow: 4px 0 15px rgba(40, 29, 20, 0.18);
+    box-shadow: 4px 0 15px rgba(40, 29, 20, 0.14);
 }
 
 
@@ -141,19 +142,24 @@ body {
 
     transition:
         background-color 0.2s ease,
-        transform 0.2s ease;
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 
 .sidebarBTN:hover {
-    background-color: rgba(220, 229, 215, 0.16);
+    background-color: var(--sage-lighter);
 
     transform: translateY(-1px);
+
+    box-shadow: 0 3px 8px rgba(50, 65, 49, 0.16);
 }
 
 
 .sidebarBTN:active {
     transform: scale(0.96);
+
+    background-color: var(--sage-light);
 }
 
 
@@ -187,7 +193,7 @@ body {
 
     text-align: center;
 
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
 
     border-radius: 0;
 }
@@ -220,7 +226,9 @@ body {
 
 
 #openSide:hover {
-    background-color: var(--wood-light);
+    background-color: var(--sage);
+
+    color: var(--white);
 }
 
 
@@ -298,7 +306,9 @@ button {
 
 
 button:hover {
-    background-color: var(--sage);
+    background-color: var(--sage-lighter);
+
+    color: var(--forest);
 
     transform: translateY(-1px);
 
@@ -307,6 +317,8 @@ button:hover {
 
 
 button:active {
+    background-color: var(--sage-light);
+
     transform: translateY(0);
 }
 
@@ -395,7 +407,9 @@ button:active {
 
 
 .calendar-header button:hover {
-    background-color: var(--wood-light);
+    background-color: var(--sage-lighter);
+
+    color: var(--forest);
 }
 
 
