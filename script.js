@@ -2494,7 +2494,7 @@ async function loadPosts() {
                         )}
                     </p>
 
-                    <p>
+                    <p class="post-description">
                         ${escapeHTML(
                             post.description
                         )}
