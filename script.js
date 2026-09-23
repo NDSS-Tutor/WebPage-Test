@@ -2003,9 +2003,7 @@ function showPage(page) {
 
     if (page === "home") {
 
-        content.innerHTML = `
-            <h1>Home</h1>
-        `;
+        showHomePage();
 
     }
 
@@ -2029,9 +2027,7 @@ function showPage(page) {
 
     else if (page === "groups") {
 
-        content.innerHTML = `
-            <h1>Study Groups</h1>
-        `;
+        showGroupsPage();
 
     }
 
@@ -2044,6 +2040,7 @@ function showPage(page) {
     else if (page === "site-info") {
         
         showInfoPage();
+        
     }
 }
 
