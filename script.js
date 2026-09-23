@@ -2042,12 +2042,8 @@ function showPage(page) {
     }
 
     else if (page === "site-info") {
-
-        content.innerHTML = `
-            <h1 class="title">
-                SITE INFO
-            </h1>
-        `;
+        
+        showInfoPage();
     }
 }
 
@@ -8061,4 +8057,19 @@ function escapeAttribute(
             />/g,
             "&gt;"
         );
+}
+
+/* =========================================================
+   SITE INFO
+   ========================================================= */
+
+function showInfoPage(){
+    content.innerHTML = `
+        <h2 class="info-section">
+            CONTRIBUTERS
+        <h2>
+        <h2 class="info-section">
+            TOOLS USED
+        <h2>
+    `;
 }
