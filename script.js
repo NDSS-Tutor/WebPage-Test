@@ -2173,7 +2173,6 @@ function saveStudyFlashcards() {
     }
 }
 
-
 /* =========================================================
    STUDY TOOLS MAIN PAGE
    ========================================================= */
@@ -2232,7 +2231,6 @@ function showStudyToolsPage() {
     showNoteTool();
 }
 
-
 /* =========================================================
    STUDY TOOL NAVIGATION
    ========================================================= */
@@ -2255,14 +2253,12 @@ function setStudyToolNavigation(activeTool) {
         });
 }
 
-
 function getStudyToolContent() {
 
     return document.getElementById(
         "study-tools-content"
     );
 }
-
 
 /* =========================================================
    NOTE-TAKING METHODS
@@ -2300,7 +2296,6 @@ const STUDY_NOTE_METHODS = {
             "Record each important idea as a separate numbered sentence."
     }
 };
-
 
 /* =========================================================
    NOTE-TAKING PAGE
@@ -2445,7 +2440,6 @@ function showNoteTool(existingNote = null) {
     renderNoteMethod(existingNote);
     renderSavedNotes();
 }
-
 
 /* =========================================================
    NOTE METHOD RENDERING
@@ -2739,7 +2733,6 @@ function renderNoteMethod(existingNote = null) {
     }
 }
 
-
 /* =========================================================
    CHARTING
    ========================================================= */
@@ -2791,7 +2784,6 @@ function addChartingRow() {
 
     tbody.appendChild(row);
 }
-
 
 /* =========================================================
    COLLECT NOTE DATA
@@ -2920,7 +2912,6 @@ function collectCurrentStudyNoteFields() {
     return null;
 }
 
-
 /* =========================================================
    SAVE NOTE
    ========================================================= */
@@ -3034,7 +3025,6 @@ function clearStudyNoteForm() {
     showNoteTool();
 }
 
-
 function openStudyNote(noteId) {
 
     const note =
@@ -3049,7 +3039,6 @@ function openStudyNote(noteId) {
 
     showNoteTool(note);
 }
-
 
 function deleteStudyNote(noteId) {
 
@@ -3073,7 +3062,6 @@ function deleteStudyNote(noteId) {
 
     renderSavedNotes();
 }
-
 
 /* =========================================================
    DISPLAY SAVED NOTES
@@ -3166,7 +3154,6 @@ function renderSavedNotes() {
             `
         ).join("");
 }
-
 
 /* =========================================================
    FLASHCARDS
@@ -3342,7 +3329,6 @@ function showFlashcardsTool() {
     renderFlashcardStudyArea();
 }
 
-
 /* =========================================================
    ADD FLASHCARD
    ========================================================= */
@@ -3435,7 +3421,6 @@ function addStudyFlashcard() {
     showFlashcardsTool();
 }
 
-
 /* =========================================================
    FLASHCARD FORM
    ========================================================= */
@@ -3460,7 +3445,6 @@ function clearFlashcardForm() {
         backInput.value = "";
     }
 }
-
 
 /* =========================================================
    DELETE FLASHCARD
@@ -3495,7 +3479,6 @@ function deleteStudyFlashcard(cardId) {
 
     showFlashcardsTool();
 }
-
 
 /* =========================================================
    SHUFFLE FLASHCARDS
@@ -3549,7 +3532,6 @@ function flipStudyFlashcard() {
     renderFlashcardStudyArea();
 }
 
-
 function previousStudyFlashcard() {
 
     if (!studyFlashcards.length) {
@@ -3572,7 +3554,6 @@ function previousStudyFlashcard() {
     renderFlashcardStudyArea();
 }
 
-
 function nextStudyFlashcard() {
 
     if (!studyFlashcards.length) {
@@ -3593,7 +3574,6 @@ function nextStudyFlashcard() {
 
     renderFlashcardStudyArea();
 }
-
 
 /* =========================================================
    FLASHCARD LIST
@@ -3784,7 +3764,6 @@ function renderFlashcardStudyArea() {
     `;
 }
 
-
 /* =========================================================
    STUDY TIMER
    ========================================================= */
@@ -3941,7 +3920,6 @@ function showStudyTimerTool() {
     updateStudyTimerDisplay();
 }
 
-
 /* =========================================================
    TIMER SETTINGS
    ========================================================= */
@@ -3982,8 +3960,9 @@ function getTimerSettingValue(
     );
 }
 
-
-function updateStudyTimerSettings() {
+function updateStudyTimerSettings(
+    resetRemaining = true
+) {
 
     const studyMinutes =
         getTimerSettingValue(
@@ -4010,7 +3989,17 @@ function updateStudyTimerSettings() {
         breakMinutes;
 
 
-    if (!studyTimerState.running) {
+    /*
+     * Only reset the timer when the settings are
+     * actually being changed by the user.
+     *
+     * Resume/start passes false so the paused time
+     * remains untouched.
+     */
+    if (
+        resetRemaining &&
+        !studyTimerState.running
+    ) {
 
         studyTimerState.remainingSeconds =
             (
@@ -4024,7 +4013,6 @@ function updateStudyTimerSettings() {
 
     updateStudyTimerDisplay();
 }
-
 
 /* =========================================================
    TIMER CONTROLS
@@ -4043,7 +4031,6 @@ function toggleStudyTimer() {
     }
 }
 
-
 function startStudyTimer() {
 
     if (studyTimerState.running) {
@@ -4051,12 +4038,20 @@ function startStudyTimer() {
     }
 
 
-    updateStudyTimerSettings();
+    /*
+     * Update the stored study/break minute settings,
+     * but DO NOT reset the current remaining time.
+     */
+    updateStudyTimerSettings(false);
 
 
     studyTimerState.running = true;
 
 
+    /*
+     * Make absolutely sure there is only one interval
+     * running at a time.
+     */
     clearInterval(
         studyTimerInterval
     );
@@ -4093,7 +4088,6 @@ function startStudyTimer() {
     updateStudyTimerDisplay();
 }
 
-
 function pauseStudyTimer() {
 
     studyTimerState.running = false;
@@ -4107,9 +4101,14 @@ function pauseStudyTimer() {
     studyTimerInterval = null;
 
 
+    /*
+     * DO NOT modify remainingSeconds here.
+     *
+     * This is what allows the timer to resume from
+     * exactly where it was paused.
+     */
     updateStudyTimerDisplay();
 }
-
 
 function resetStudyTimer() {
 
@@ -4135,7 +4134,6 @@ function resetStudyTimer() {
     updateStudyTimerDisplay();
 }
 
-
 /* =========================================================
    TIMER MODE SWITCH
    ========================================================= */
@@ -4155,7 +4153,6 @@ function switchStudyTimerMode() {
                 : studyTimerState.breakMinutes
         ) * 60;
 }
-
 
 /* =========================================================
    TIMER FORMATTING
@@ -4254,7 +4251,7 @@ function updateStudyTimerDisplay() {
         status.textContent =
             studyTimerState.running
                 ? "Timer running."
-                : "Timer paused or ready.";
+                : "Timer ready.";
 
     }
 }
