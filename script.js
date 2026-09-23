@@ -2040,7 +2040,7 @@ function showPage(page) {
     else if (page === "site-info") {
         
         showInfoPage();
-        
+
     }
 }
 
@@ -4850,6 +4850,7 @@ async function loadPosts() {
         `;
     }
 }
+
 function togglePostDescription(postId) {
 
     const descriptionElement =
@@ -8062,11 +8063,13 @@ function escapeAttribute(
 
 function showInfoPage(){
     content.innerHTML = `
-        <h2 class="info-section">
-            CONTRIBUTERS
-        <h2>
-        <h2 class="info-section">
-            TOOLS USED
-        <h2>
+        <div class="info-section">
+            <h2 class="info-heading">
+                CONTRIBUTERS
+            </h2>
+            <h2 class="info-heading">
+                TOOLS USED
+            </h2>
+        </div>
     `;
 }
