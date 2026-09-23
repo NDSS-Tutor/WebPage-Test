@@ -129,7 +129,8 @@ body {
     min-height: 64px;
 
     border: none;
-    border-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
 
     background-color: var(--sage-dark);
 
