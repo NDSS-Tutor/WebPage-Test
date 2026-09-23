@@ -246,10 +246,9 @@ body {
 #openSide {
     position: fixed;
 
-    left: 14px;
     top: 14px;
 
-    width: 48px;
+    width: 64px;
     height: 48px;
 
     text-align: center;
