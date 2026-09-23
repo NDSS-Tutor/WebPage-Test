@@ -2545,4 +2545,5 @@ hr {
 .info-heading{
     text-align: center;
     font-size: 1.8rem;
+    border-radius: 12px;
 }
