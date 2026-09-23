@@ -246,6 +246,7 @@ body {
 #openSide {
     position: fixed;
 
+    left: 0px;
     top: 14px;
 
     width: 64px;
