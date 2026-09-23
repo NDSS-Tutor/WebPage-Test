@@ -259,7 +259,8 @@ body {
     background-color: var(--wood);
     color: var(--cream);
 
-    border-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top-right-radius: 10px;
 
     box-shadow: var(--shadow);
 }
