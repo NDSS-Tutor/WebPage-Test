@@ -2543,8 +2543,9 @@ hr {
     margin-left: 20%;
     margin-right: 20%;
     height: 100vh;
+    margin-top: 20px;
     padding-top: 40px;
-    border-radius: 12px 12px 0 0 !important;
+    border-radius: 16px 16px 0 0 !important;
 }
 .info-heading{
     text-align: center;
