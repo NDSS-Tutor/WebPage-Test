@@ -2025,12 +2025,6 @@ function showPage(page) {
 
     }
 
-    else if (page === "groups") {
-
-        showGroupsPage();
-
-    }
-
     else if (page === "account") {
 
         showAccountPage();
