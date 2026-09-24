@@ -8148,13 +8148,13 @@ function showInfoPage(){
                 Developers
             </h3>
             <p class = "sub-p">
-                - Rowan Dombroskie :: Head Developer
+                Rowan Dombroskie                  ::                  Head Developer
             </p>
             <h4 class = "sub-head">
                 Bug Testers
             </h4>
             <p class = "sub-p">
-                - Devonte Okumu :: Cynical Tester
+                Devonte Okumu                 ::                  Cynical Tester
             </p>
             <h2 class="info-heading">
                 TOOLS USED
