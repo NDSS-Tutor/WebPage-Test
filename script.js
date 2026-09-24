@@ -8148,21 +8148,13 @@ function showInfoPage(){
                 Developers
             </h3>
             <p class = "sub-p">
-
-
                 Rowan Dombroskie                  ::                  Head Developer
-
-
             </p>
             <h4 class = "sub-head">
                 Bug Testers
             </h4>
             <p class = "sub-p">
-
-
                 Devonte Okumu                 ::                  Cynical Tester
-
-
             </p>
             <h2 class="info-heading">
                 TOOLS USED
@@ -8171,21 +8163,13 @@ function showInfoPage(){
                 Development
             </h4>
             <p class = "sub-p">
-
-
                 Chat GPT                 ::                  Code Assistant
-
-
             </p>
             <h4 class = "sub-head">
                 Backend
             </h4>
             <p class = "sub-p">
-
-
                 Supabase                 ::                  Live Server Hosting
-
-
             </p>
         </div>
     `;
