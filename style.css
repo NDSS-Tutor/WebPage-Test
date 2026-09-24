@@ -2542,6 +2542,7 @@ hr {
     background-color: var(--sage-light);
     margin-left: 20%;
     margin-right: 20%;
+    height: 100%;
 }
 .info-heading{
     text-align: center;
