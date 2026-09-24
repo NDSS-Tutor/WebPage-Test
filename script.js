@@ -2939,7 +2939,6 @@ function saveCurrentStudyNote() {
     const fields =
         collectCurrentStudyNoteFields();
 
-
     if (!title) {
 
         if (message) {
@@ -2980,12 +2979,94 @@ function saveCurrentStudyNote() {
     };
 
 
-    studyNotes.unshift(note);
+    /*
+       Check whether a note with the same
+       title already exists.
 
+       The comparison ignores:
+       - Capitalization
+       - Extra spaces at the beginning/end
+    */
+
+    const existingNoteIndex =
+        studyNotes.findIndex(
+            savedNote =>
+                savedNote.title
+                    .trim()
+                    .toLowerCase() ===
+                title
+                    .trim()
+                    .toLowerCase()
+        );
+
+
+    /*
+       Keep the old note in case
+       localStorage saving fails.
+    */
+
+    let previousNote = null;
+
+
+    if (existingNoteIndex !== -1) {
+
+        /*
+           A note with the same title already exists.
+           Save the old version so we can restore it
+           if saving fails.
+        */
+
+        previousNote =
+            studyNotes[existingNoteIndex];
+
+        /*
+           Keep the original ID so this is treated
+           as an update to the existing note.
+        */
+
+        note.id =
+            previousNote.id;
+
+        /*
+           Replace the existing note.
+        */
+
+        studyNotes[existingNoteIndex] =
+            note;
+
+    } else {
+
+        /*
+           No note with this title exists,
+           so create a new one.
+        */
+
+        studyNotes.unshift(note);
+
+    }
+
+
+    /*
+       Save the updated notes to localStorage.
+    */
 
     if (!saveStudyNotes()) {
 
-        studyNotes.shift();
+        /*
+           If saving failed, undo the change.
+        */
+
+        if (existingNoteIndex !== -1) {
+
+            studyNotes[existingNoteIndex] =
+                previousNote;
+
+        } else {
+
+            studyNotes.shift();
+
+        }
+
 
         if (message) {
 
@@ -3001,7 +3082,9 @@ function saveCurrentStudyNote() {
     if (message) {
 
         message.textContent =
-            "Note saved.";
+            existingNoteIndex !== -1
+                ? "Note updated."
+                : "Note saved.";
 
     }
 
