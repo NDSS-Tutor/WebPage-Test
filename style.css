@@ -2545,9 +2545,8 @@ hr {
     height: 100vh;
     margin-top: 20px;
     padding-top: 40px;
+    border: 6px solid var(--wood) !important;
     border-radius: 16px 16px 0 0 !important;
-    border-color: var(--wood) !important;
-    border-width: 6px !important;
 }
 .info-heading{
     text-align: center;
