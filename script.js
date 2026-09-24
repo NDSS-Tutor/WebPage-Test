@@ -8144,6 +8144,18 @@ function showInfoPage(){
             <h2 class="info-heading">
                 CONTRIBUTERS
             </h2>
+            <h3 class = "sub-head">
+                Developers
+            </h3>
+            <p class = "sub-p">
+                - Rowan Dombroskie :: Head Developer
+            </p>
+            <h4 class = "sub-head">
+                Bug Testers
+            </h4>
+            <p class = "sub-p">
+                - Devonte Okumu :: Cynical Tester
+            </p>
             <h2 class="info-heading">
                 TOOLS USED
             </h2>
